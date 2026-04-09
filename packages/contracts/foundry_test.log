@@ -1,0 +1,54 @@
+Compiling 2 files with Solc 0.8.33
+Solc 0.8.33 finished in 533.16ms
+Compiler run successful with warnings:
+Warning (2424): Natspec memory-safe-assembly special comment for inline assembly is deprecated and scheduled for removal. Use the memory-safe block annotation instead.
+  --> lib/openzeppelin-contracts/contracts/utils/Strings.sol:30:13:
+   |
+30 |             assembly {
+   |             ^ (Relevant source part starts here and spans across multiple lines).
+
+Warning (2424): Natspec memory-safe-assembly special comment for inline assembly is deprecated and scheduled for removal. Use the memory-safe block annotation instead.
+  --> lib/openzeppelin-contracts/contracts/utils/Strings.sol:36:17:
+   |
+36 |                 assembly {
+   |                 ^ (Relevant source part starts here and spans across multiple lines).
+
+Warning (2424): Natspec memory-safe-assembly special comment for inline assembly is deprecated and scheduled for removal. Use the memory-safe block annotation instead.
+   --> lib/openzeppelin-contracts/contracts/token/ERC721/ERC721.sol:476:21:
+    |
+476 |                     assembly {
+    |                     ^ (Relevant source part starts here and spans across multiple lines).
+
+Warning (2072): Unused local variable.
+  --> test/AgentReputation.t.sol:26:21:
+   |
+26 |         (uint256 q, uint256 s, uint256 e, uint256 t, uint256 w, uint256 lastBlock) = reputation.agentScores(tokenId);
+   |                     ^^^^^^^^^
+
+Warning (2072): Unused local variable.
+  --> test/AgentReputation.t.sol:26:32:
+   |
+26 |         (uint256 q, uint256 s, uint256 e, uint256 t, uint256 w, uint256 lastBlock) = reputation.agentScores(tokenId);
+   |                                ^^^^^^^^^
+
+Warning (2072): Unused local variable.
+  --> test/AgentReputation.t.sol:26:43:
+   |
+26 |         (uint256 q, uint256 s, uint256 e, uint256 t, uint256 w, uint256 lastBlock) = reputation.agentScores(tokenId);
+   |                                           ^^^^^^^^^
+
+
+Ran 2 tests for test/Counter.t.sol:CounterTest
+[PASS] testFuzz_SetNumber(uint256) (runs: 256, μ: 28744, ~: 29289)
+[PASS] test_Increment() (gas: 28783)
+Suite result: ok. 2 passed; 0 failed; 0 skipped; finished in 16.13ms (13.60ms CPU time)
+
+Ran 5 tests for test/AgentReputation.t.sol:AgentReputationTest
+[PASS] test_MintIdentity(address) (runs: 256, μ: 380618, ~: 380638)
+[PASS] test_SBT_BlockTransfer() (gas: 379691)
+[PASS] test_ScoreHistory() (gas: 669752)
+[PASS] test_UpdateScore_OnlyOwner() (gas: 379916)
+[PASS] test_WeightedScoreCalculation() (gas: 519056)
+Suite result: ok. 5 passed; 0 failed; 0 skipped; finished in 24.21ms (20.63ms CPU time)
+
+Ran 2 test suites in 187.32ms (40.34ms CPU time): 7 tests passed, 0 failed, 0 skipped (7 total tests)
