@@ -1,0 +1,32 @@
+Issue Type,Summary,Priority,Estimate,Status,Sprint,External ID,Mapped IDs,Owner,Dependency
+Task,Implement agent-adapter interception hooks,Highest,2,Done,Sprint 1,S1-T01,REQ-MIRROR-001,Backend,None
+Task,Define and validate canonical decision payload schema,Highest,1.5,Done,Sprint 1,S1-T02,REQ-MIRROR-003 NFR-006,Backend,None
+Task,Implement off-chain decision payload persistence,Highest,2,Done,Sprint 1,S1-T03,REQ-MIRROR-002,Backend,None
+Task,Implement on-chain hash anchoring flow to DecisionLog,Highest,2,Done,Sprint 1,S1-T04,REQ-MIRROR-002 NFR-004,Smart Contract,None
+Task,Emit lifecycle event stream (DecisionLogged),High,1.5,Done,Sprint 1,S1-T05,REQ-MIRROR-005,Smart Contract,None
+Task,Build minimal dashboard stream for live rows,High,2,Done,Sprint 1,S1-T06,REQ-MIRROR-005 NFR-001 NFR-003,Frontend,None
+Task,Build explanation worker for blocked decisions,Highest,2,Done,Sprint 2,S2-T01,REQ-MIRROR-004,Backend,None
+Task,Implement state snapshot capture at decision time,Highest,1.5,Done,Sprint 2,S2-T02,REQ-CF-001,Backend,None
+Task,Implement replay engine for 3 fixed scenarios,Highest,2,Done,Sprint 2,S2-T03,REQ-CF-002,Backend,None
+Task,Implement quantitative delta computation,Highest,1.5,Done,Sprint 2,S2-T04,REQ-CF-003,Backend,None
+Task,Generate short synthesis text per scenario,High,1,Done,Sprint 2,S2-T05,REQ-CF-004,Backend,None
+Task,Persist replay linkage by decision ID,High,1,Done,Sprint 2,S2-T06,REQ-CF-005,Backend,None
+Task,Implement soulbound identity token contract behavior,Highest,2,Done,Sprint 3,S3-T01,REQ-REP-001,Smart Contract,None
+Task,Implement weighted score calculator (35/30/20/15),Highest,1.5,Done,Sprint 3,S3-T02,REQ-REP-002,Smart Contract,None
+Task,Implement score and metadata update pipeline per finalized decision,Highest,2,Done,Sprint 3,S3-T03,REQ-REP-003,Backend,None
+Task,Implement checkpoint storage/query for historical score,High,1.5,Done,Sprint 3,S3-T04,REQ-REP-004,Smart Contract,S3-T02
+Task,Build reputation dashboard view,High,2,Done,Sprint 3,S3-T05,REQ-REP-002 REQ-REP-003 REQ-REP-004,Frontend,None
+Task,Implement unpaid request challenge flow (HTTP 402),Highest,1.5,Done,Sprint 4,S4-T01,REQ-FEED-001,Backend,None
+Task,Implement payment verification gate before data delivery,Highest,2,Done,Sprint 4,S4-T02,REQ-FEED-002,Backend,None
+Task,Implement 80/20 settlement accounting and transfer logic,Highest,2,Done,Sprint 4,S4-T03,REQ-FEED-003,Backend + Smart Contract,None
+Task,Optimize paid response path for SLA <= 3s P95,High,1.5,Done,Sprint 4,S4-T04,REQ-FEED-004,Backend,None
+Task,Build feed console timeline UI,High,1.5,Done,Sprint 4,S4-T05,REQ-FEED-001 REQ-FEED-002 REQ-FEED-004,Frontend,None
+Task,Build unified observability dashboards,Highest,2,To Do,Sprint 5,S5-T01,NFR-001 NFR-002 NFR-003 NFR-004,Platform/Ops,S1-T06 S2-T06 S4-T04
+Task,Implement API spike fallback and cache last 20,Highest,1.5,To Do,Sprint 5,S5-T02,NFR-005,Backend,S2-T01
+Task,Implement TEE failover runbook and backup EOA path,High,1.5,To Do,Sprint 5,S5-T03,NFR-005,Platform/Ops,S1-T04
+Task,Add chain congestion queueing and pending UX,High,2,To Do,Sprint 5,S5-T04,NFR-004,Backend + Frontend,S1-T04 S1-T06
+Task,Run full traceability audit,Highest,1,To Do,Sprint 5,S5-T05,all REQ all NFR,QA,S5-T01
+Task,Execute regression suite and fix priority defects,Highest,2,To Do,Sprint 6,S6-T01,all REQ all NFR,QA + Backend,S5-T05
+Task,Run load/perf campaign and tune hotspots,Highest,2,To Do,Sprint 6,S6-T02,NFR-001 NFR-002 NFR-003,Platform/Ops + Backend,S6-T01
+Task,Rehearse judge/demo path with scripted scenarios,High,1,To Do,Sprint 6,S6-T03,goals + core REQ,Product + Frontend,S6-T01
+Task,Freeze release artifacts and deployment checklist,Highest,1,To Do,Sprint 6,S6-T04,all,Product + Platform/Ops,S6-T01 S6-T02 S6-T03

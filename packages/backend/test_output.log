@@ -1,0 +1,99 @@
+
+> @unbox/backend@0.1.0 test
+> vitest run
+
+
+ RUN  v4.1.4 /Users/test/Projects/Unbox/packages/backend
+
+ ✓ src/workers/__tests__/explanation-worker.spec.ts (3 tests) 2ms
+stdout | src/engine/__tests__/counterfactual-engine.spec.ts > CounterfactualEngine > should compute exactly 3 scenarios (REQ-CF-002)
+[CounterfactualEngine] Replaying scenarios for: decision-123
+
+stdout | src/engine/__tests__/counterfactual-engine.spec.ts > CounterfactualEngine > should compute numerical deltas (REQ-CF-003)
+[CounterfactualEngine] Replaying scenarios for: decision-123
+
+ ✓ src/engine/__tests__/counterfactual-engine.spec.ts (2 tests) 3ms
+stdout | src/gateway/__tests__/x402-flow.spec.ts > Unbox x402 Gateway Integration (Full V1) > TC-FEED-001: should return 402 challenge with payment spec for unauthenticated request
+[X402Gateway] Evaluating feed request...
+
+stdout | src/gateway/__tests__/x402-flow.spec.ts > Unbox x402 Gateway Integration (Full V1) > TC-FEED-002: should deliver intelligence after payment is verified
+[X402Gateway] Evaluating feed request...
+
+stdout | src/gateway/__tests__/x402-flow.spec.ts > Unbox x402 Gateway Integration (Full V1) > TC-FEED-003: should enforce deterministic 80/20 split on settlement audit
+[Settlement] Processing split for request req-1:
+ - Agent (80%): 0.8 ETH
+ - Protocol (20%): 0.2 ETH
+
+ ✓ src/gateway/__tests__/x402-flow.spec.ts (3 tests) 5ms
+ ✓ src/adapter/__tests__/agent-adapter.spec.ts (3 tests) 6ms
+stdout | src/engine/__tests__/mirror-engine.spec.ts > MirrorEngine Integration > should process and persist a full decision lifecycle
+[MirrorEngine] Intercepting decision for agent: agent-456
+
+stdout | src/engine/__tests__/mirror-engine.spec.ts > MirrorEngine Integration > should process and persist a full decision lifecycle
+[CounterfactualEngine] Replaying scenarios for: e054b641-1e65-49bd-8e9e-284f4e9bb1c1
+
+stdout | src/engine/__tests__/mirror-engine.spec.ts > MirrorEngine Integration > should process and persist a full decision lifecycle
+[ReputationService] Evaluating decision: e054b641-1e65-49bd-8e9e-284f4e9bb1c1
+[ReputationService] New Score Components: Q=90, S=90, E=91, T=100
+
+stdout | src/engine/__tests__/mirror-engine.spec.ts > MirrorEngine Integration > should process and persist a full decision lifecycle
+[ReputationService] Pushing on-chain update for token 1...
+
+stdout | src/engine/__tests__/mirror-engine.spec.ts > MirrorEngine Integration > should process and persist a full decision lifecycle
+[MirrorEngine] Decision persisted with 3 replays and score updated.
+[Event: DecisionCaptured] {
+  id: 'e054b641-1e65-49bd-8e9e-284f4e9bb1c1',
+  action: 'execute',
+  hash: '0xdcb5441d72c89a7e0c144859a9f1beeecc0e34f9302385a150ed00d8b8e86855'
+}
+
+stdout | src/engine/__tests__/mirror-engine.spec.ts > MirrorEngine Integration > should list persisted decisions
+[MirrorEngine] Intercepting decision for agent: agent-456
+
+stdout | src/engine/__tests__/mirror-engine.spec.ts > MirrorEngine Integration > should list persisted decisions
+[CounterfactualEngine] Replaying scenarios for: d10ccf99-e3b2-4b8f-87cc-727fdb8a9963
+
+stdout | src/engine/__tests__/mirror-engine.spec.ts > MirrorEngine Integration > should list persisted decisions
+[ReputationService] Evaluating decision: d10ccf99-e3b2-4b8f-87cc-727fdb8a9963
+[ReputationService] New Score Components: Q=90, S=90, E=91, T=100
+
+stdout | src/engine/__tests__/mirror-engine.spec.ts > MirrorEngine Integration > should list persisted decisions
+[ReputationService] Pushing on-chain update for token 1...
+
+stdout | src/engine/__tests__/mirror-engine.spec.ts > MirrorEngine Integration > should list persisted decisions
+[MirrorEngine] Decision persisted with 3 replays and score updated.
+[Event: DecisionCaptured] {
+  id: 'd10ccf99-e3b2-4b8f-87cc-727fdb8a9963',
+  action: 'execute',
+  hash: '0x2c4ea7918f32b886d5caa1df5f70a2b3a1a1db8aa8636282e2839a4e61939913'
+}
+
+stdout | src/engine/__tests__/mirror-engine.spec.ts > MirrorEngine Integration > should list persisted decisions
+[MirrorEngine] Intercepting decision for agent: agent-456
+
+stdout | src/engine/__tests__/mirror-engine.spec.ts > MirrorEngine Integration > should list persisted decisions
+[MirrorEngine] Explanation generated: "Trade blocked due to multiple internal security-check failures."
+[CounterfactualEngine] Replaying scenarios for: 1e162532-655c-46c8-84ff-0bfd417af3a8
+
+stdout | src/engine/__tests__/mirror-engine.spec.ts > MirrorEngine Integration > should list persisted decisions
+[ReputationService] Evaluating decision: 1e162532-655c-46c8-84ff-0bfd417af3a8
+[ReputationService] New Score Components: Q=89, S=88, E=90, T=100
+
+stdout | src/engine/__tests__/mirror-engine.spec.ts > MirrorEngine Integration > should list persisted decisions
+[ReputationService] Pushing on-chain update for token 1...
+
+stdout | src/engine/__tests__/mirror-engine.spec.ts > MirrorEngine Integration > should list persisted decisions
+[MirrorEngine] Decision persisted with 3 replays and score updated.
+[Event: DecisionCaptured] {
+  id: '1e162532-655c-46c8-84ff-0bfd417af3a8',
+  action: 'block',
+  hash: '0x30cf99af35376783c34b177280195b3e6d59393bc17d08838fa30e9ee8a1332d'
+}
+
+ ✓ src/engine/__tests__/mirror-engine.spec.ts (2 tests) 11ms
+
+ Test Files  5 passed (5)
+      Tests  13 passed (13)
+   Start at  17:04:14
+   Duration  367ms (transform 186ms, setup 0ms, import 610ms, tests 27ms, environment 0ms)
+

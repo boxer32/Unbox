@@ -1,0 +1,27 @@
+
+> @unbox/backend@0.1.0 test
+> vitest run src/services/__tests__/reputation-sync.spec.ts
+
+
+ RUN  v4.1.4 /Users/test/Projects/Unbox/packages/backend
+
+stdout | src/services/__tests__/reputation-sync.spec.ts > Reputation Synchronization Integration (TC-REP-003) > should compute and sync score from backend to anvil contract
+[ReputationService] Evaluating decision: sync-test-1775730709751
+[ReputationService] New Score Components: Q=89, S=88, E=90, T=100
+
+stdout | src/services/__tests__/reputation-sync.spec.ts > Reputation Synchronization Integration (TC-REP-003) > should compute and sync score from backend to anvil contract
+[ReputationService] Pushing on-chain update for token 1...
+
+stdout | src/services/__tests__/reputation-sync.spec.ts > Reputation Synchronization Integration (TC-REP-003) > should compute and sync score from backend to anvil contract
+[ReputationService] On-chain update successful: 0x15e0765133890859a18c6e317faf1f777179838310974867a1d2cd6c924d28ad
+
+stdout | src/services/__tests__/reputation-sync.spec.ts > Reputation Synchronization Integration (TC-REP-003) > should compute and sync score from backend to anvil contract
+[SyncTest] Weighted Score: 90 -> 90
+
+ ✓ src/services/__tests__/reputation-sync.spec.ts (1 test) 133ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  17:31:49
+   Duration  493ms (transform 47ms, setup 0ms, import 224ms, tests 133ms, environment 0ms)
+

@@ -1,0 +1,1 @@
+{"agentId":"agent-1","action":"execute","intentText":"intent","marketState":{"price":1,"liquidity":1,"gas":1,"oracleRef":"test"},"securityScan":{"score":90,"flags":[]},"blockRef":1,"payloadHash":"0xabc","decisionId":"2","timestampMs":3000}

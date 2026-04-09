@@ -1,0 +1,45 @@
+{
+  "decisionId": "cc31a4a6-c239-4701-9e33-445705d49686",
+  "agentId": "agent-456",
+  "action": "execute",
+  "intentText": "Approve token spend for Uniswap",
+  "marketState": {
+    "price": 1,
+    "liquidity": 10000000,
+    "gas": 15,
+    "oracleRef": "fixed"
+  },
+  "securityScan": {
+    "score": 100,
+    "flags": []
+  },
+  "blockRef": 999999,
+  "timestampMs": 1775740024907,
+  "payloadHash": "0xa9795942854061ba439378c8c6dc6ed28d130a175a07885559f7d1b1d8073d0e",
+  "replays": [
+    {
+      "decisionId": "cc31a4a6-c239-4701-9e33-445705d49686",
+      "scenario": "wait_30s",
+      "usdDelta": 0.005,
+      "slippageDeltaPct": 0,
+      "gasDelta": 0,
+      "summary": "Waiting 30 seconds would have yielded a slightly better entry price (+0.5%)."
+    },
+    {
+      "decisionId": "cc31a4a6-c239-4701-9e33-445705d49686",
+      "scenario": "alt_route",
+      "usdDelta": 0,
+      "slippageDeltaPct": -0.02,
+      "gasDelta": 5,
+      "summary": "Route via SushiSwap would have decreased slippage by 2% at the cost of higher gas."
+    },
+    {
+      "decisionId": "cc31a4a6-c239-4701-9e33-445705d49686",
+      "scenario": "invert_action",
+      "usdDelta": -0.1,
+      "slippageDeltaPct": 0,
+      "gasDelta": 0,
+      "summary": "Inverting this action would have resulted in a significant missed opportunity cost."
+    }
+  ]
+}

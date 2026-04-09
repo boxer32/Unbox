@@ -1,0 +1,19 @@
+{
+  "decisionId": "06ad322f-5ccf-4ff7-ac5c-91f93b34e7f2",
+  "agentId": "test-agent",
+  "action": "execute",
+  "intentText": "Swap 1 ETH for USDC",
+  "marketState": {
+    "price": 3000,
+    "liquidity": 1000000,
+    "gas": 50,
+    "oracleRef": "v1"
+  },
+  "securityScan": {
+    "score": 95,
+    "flags": []
+  },
+  "blockRef": 1000,
+  "timestampMs": 1775732919514,
+  "payloadHash": "0xac2c7fcc4947e0ce44a412077840e99a2d071a9022f9a1937e0126563a0c5612"
+}

@@ -1,0 +1,45 @@
+{
+  "decisionId": "b25a3f4d-de16-4967-88dd-c5ec39e3ad4c",
+  "agentId": "test-agent",
+  "action": "execute",
+  "intentText": "Swap 1 ETH for USDC",
+  "marketState": {
+    "price": 3000,
+    "liquidity": 1000000,
+    "gas": 50,
+    "oracleRef": "v1"
+  },
+  "securityScan": {
+    "score": 95,
+    "flags": []
+  },
+  "blockRef": 1000,
+  "timestampMs": 1775740013659,
+  "payloadHash": "0x5c03dc6843b6e02410a6956f872a760dde3bab2a6b9beb9d3a12f8f0505f9d7a",
+  "replays": [
+    {
+      "decisionId": "b25a3f4d-de16-4967-88dd-c5ec39e3ad4c",
+      "scenario": "wait_30s",
+      "usdDelta": 15,
+      "slippageDeltaPct": 0,
+      "gasDelta": 0,
+      "summary": "Waiting 30 seconds would have yielded a slightly better entry price (+0.5%)."
+    },
+    {
+      "decisionId": "b25a3f4d-de16-4967-88dd-c5ec39e3ad4c",
+      "scenario": "alt_route",
+      "usdDelta": 0,
+      "slippageDeltaPct": -0.02,
+      "gasDelta": 5,
+      "summary": "Route via SushiSwap would have decreased slippage by 2% at the cost of higher gas."
+    },
+    {
+      "decisionId": "b25a3f4d-de16-4967-88dd-c5ec39e3ad4c",
+      "scenario": "invert_action",
+      "usdDelta": -300,
+      "slippageDeltaPct": 0,
+      "gasDelta": 0,
+      "summary": "Inverting this action would have resulted in a significant missed opportunity cost."
+    }
+  ]
+}
