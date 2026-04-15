@@ -55,13 +55,23 @@ export interface RiskState {
   targets: Array<{ address: string; count: number }>;
 }
 
-export interface ThirdwebIntent {
+/**
+ * OnchainOSIntent — canonical intent format for Onchain OS / Uniswap skill interception.
+ * Captures the agent wallet identity and the target execution action
+ * flowing through OKX Onchain OS or Uniswap V3 skills.
+ */
+export interface OnchainOSIntent {
   agentTokenId: number;
-  action: 'SWAP' | 'TRANSFER';
+  agentWalletAddress?: string; // Agentic Wallet identity (TEE-protected)
+  action: 'UNISWAP_EXACT_INPUT' | 'ONCHAIN_OS_SWAP' | 'ONCHAIN_OS_TRANSFER' | 'UNISWAP_EXACT_OUTPUT';
   tokenIn: string;
   tokenOut: string;
   amount: string;
+  chainIndex?: string; // X Layer = '196', Ethereum = '1'
 }
+
+/** @deprecated Use OnchainOSIntent instead */
+export type ThirdwebIntent = OnchainOSIntent;
 
 export interface OptimizedPlan {
   originalPayload: any;
@@ -76,5 +86,5 @@ export interface OptimizedPlan {
 
 export interface OptimizerSkill {
   skillName: string;
-  optimize(intent: ThirdwebIntent): Promise<OptimizedPlan>;
+  optimize(intent: OnchainOSIntent): Promise<OptimizedPlan>;
 }

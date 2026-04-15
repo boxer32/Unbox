@@ -10,3 +10,10 @@ data
 .wrangler
 .dev.vars
 docs/
+
+# Hackathon Submission Cleanup
+flatten.txt
+.*
+!.gitignore
+!.github/
+!.agents/

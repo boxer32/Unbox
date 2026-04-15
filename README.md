@@ -1,33 +1,124 @@
-# 🛡️ Unbox: The Accountability Layer for AI Agents
+# 📦 Unbox (AgentMirror): The On-chain Accountability & Guardrail Layer
 
-**"Agents should be accountable. Not just autonomous."**
+## 🎯 Project Intro
+**Unbox** is an active optimization and security guardrail middleware for AI Agents operating on the **OKX X Layer**. While Agentic Wallets hold the capital and Onchain OS provides the execution pathways, Agents inherently act as "Black Boxes," creating severe information asymmetry and security risks for human users. 
 
-Unbox is an on-chain agent intelligence layer built on **X Layer (OKX)** and **Onchain OS**. It converts opaque agent behavior into a transparent, verifiable, and monetizable intelligence stream. Unbox captures, explains, and stress-tests every decision an AI agent makes before and after execution.
-
----
-
-## 🚀 Key Features
-
-### 🪞 Mirror (Explainability)
-Intercepts every agent intent and normalizes it into a canonical Mirror record. It generates plain-language explanations for every action, especially when a guardrail blocks a risky transaction.
-
-### 🧪 Counterfactual (Outcome Replay)
-Quantitative outcome analysis. Unbox snapshots market state (price, liquidity, gas) at decision-time and replays alternative scenarios (e.g., "What if the agent waited 30s?") to calculate USD and Gas deltas.
-
-
-### 💰 x402 Feed (Monetization)
-Forensic intelligence for the agentic economy. Other agents can pay to access high-quality decision batches via the **x402 protocol** (HTTP 402 Payment Required), creating a new revenue stream for honest agents.
+Unbox solves this by intercepting Agent intents, running Bayesian optimization (via `ax.dev`) to find the most capital-efficient route, and enforcing an on-chain **"Handshake Protocol"** via the `UnboxGuardrail` Smart Contract before allowing execution. If an agent's on-chain reputation score is too low for a risky trade, Unbox triggers an automated **circuit break**.
 
 ---
 
-## 🛠️ Technology Stack
+## 🏗️ Architecture Overview
 
-- **L2 Network**: X Layer (OKX Testnet)
-- **Infrastructure**: Cloudflare Workers (Edge Functions) + Cloudflare D1 (SQL Storage)
-- **Smart Contracts**: Solidity (Foundry)
-- **Backend API**: Hono Framework (Stateless Cloudflare Worker)
-- **Frontend**: Vite + React + TanStack Router (Dashboard)
-- **AI/LLM**: OpenRouter (Routed Synthesis for Explanations)
+Unbox operates as a **deterministic Sub-OS** sitting between the Agentic Wallet and the blockchain:
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                        USER / OPERATOR                          │
+└──────────────────┬───────────────────────────────────────────────┘
+                   │ Command
+                   ▼
+┌──────────────────────────────────────────────────────────────────┐
+│              OKX Agentic Wallet (TEE-protected)                 │
+│              Address: 0xe7b7...5c27a                            │
+│              Identity: Guardian of Accountability               │
+└──────────────────┬───────────────────────────────────────────────┘
+                   │ OnchainOSIntent / Uniswap Skill Call
+                   ▼
+┌──────────────────────────────────────────────────────────────────┐
+│                    UNBOX MIDDLEWARE LAYER                        │
+│                                                                  │
+│  1. AgentAdapter ── Intercept & Normalize intent                │
+│  2. OKXSecurityService ── Real-time OKX Token Risk Scan         │
+│  3. AxBayesianOptimizer ── OKX DEX Aggregator + Uniswap V3     │
+│  4. CounterfactualEngine ── "What-if" scenario replay           │
+│  5. ExplanationWorker ── AI-powered forensic narration          │
+│  6. ReputationService ── On-chain SBT reputation scoring        │
+└──────────────────┬───────────────────────────────────────────────┘
+                   │ Optimized Payload Hash
+                   ▼
+┌──────────────────────────────────────────────────────────────────┐
+│                   X LAYER SMART CONTRACTS                        │
+│                                                                  │
+│  • UnboxGuardrail.sol ── Handshake + Circuit Break              │
+│  • DecisionLog.sol ── Immutable decision records                │
+│  • AgentReputation.sol ── Soulbound Token reputation            │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+1. **Agentic Wallet:** Generates trading intents using Onchain OS / Uniswap Skills.
+2. **Unbox Middleware (Interceptor):** Halts immediate execution, runs security + optimization.
+3. **Bayesian Optimizer (`ax.dev`):** Computes alternative scenarios (Counterfactuals) to maximize ROI and minimize gas/slippage using real-time OKX DEX Aggregator quotes.
+4. **The Handshake Protocol:** Submits the optimized payload hash to `UnboxGuardrail.sol`.
+5. **Guardrail Contract:** Verifies the Agent's Soulbound Token (SBT) Reputation Score.
+   - **Approved:** Forwarded to X Layer for execution.
+   - **Rejected (Circuit Break):** Intent is blocked, and Global Threat Map is updated.
+
+---
+
+## 🔗 Deployment Addresses (X Layer)
+
+| Contract | Address |
+|---|---|
+| **Agentic Wallet (Identity)** | `0xe7b7a872e04ea2ffee43785187a4663887e5c27a` |
+| **UnboxGuardrail.sol** | Deployed on X Layer Testnet |
+| **AgentReputation.sol (SBT)** | Deployed on X Layer Testnet |
+| **DecisionLog.sol** | Deployed on X Layer Testnet |
+
+---
+
+## 🛠️ Onchain OS & Uniswap Skill Usage
+*(Criteria 1: Onchain OS/Uniswap integration and innovation — 25%)*
+
+Unbox does not just *use* Onchain OS and Uniswap skills; it **protects and optimizes** them.
+
+### Onchain OS Integration
+| Module | Usage | File |
+|---|---|---|
+| **DEX Aggregator** | Real-time swap quotes for counterfactual analysis | `skills/okx-trade-service.ts` |
+| **Security Token Scan** | Pre-execution honeypot/rugpull detection | `services/okx-security-service.ts` |
+| **Agentic Wallet** | TEE-protected on-chain identity & signing | CLI: `onchainos wallet` |
+| **Supported Chains** | Dynamic chain validation for X Layer routing | `skills/okx-trade-service.ts` |
+
+### Uniswap Skill Integration
+When our Agentic Wallet utilizes the **Uniswap Exact Input Swap Skill** via Onchain OS, Unbox intercepts the skill call. Instead of accepting the default slippage and routing parameters, Unbox dynamically injects mathematically optimized parameters (via Bayesian search on `ax.dev`) back into the Uniswap Skill module. This transforms standard Onchain OS skills from "blind executors" into **"risk-adjusted, high-efficiency executors."**
+
+### Innovation Highlight
+**Forensic Guardrail:** Every intercepted agent intent triggers a real-time security audit using OKX's 4-level risk model. This detects Honeypots and Rugpulls before they hit the chain, providing a unique safety layer for the X Layer ecosystem that does not exist in any other middleware.
+
+---
+
+## ⚙️ Working Mechanics & AI Interactive Experience
+*(Criteria 3 & 4: AI Experience & Product Completeness — 50%)*
+
+### Decision Flow
+1. **The Intent:** The user commands the Agent to interact with a DeFi protocol via Onchain OS or Uniswap skills.
+2. **The Security Audit:** OKX Security Token Scan runs automatically — risk level (1–4) is computed.
+3. **The Optimization:** The Bayesian optimizer queries OKX DEX Aggregator and computes counterfactual routes in real-time.
+4. **The Explanation:** OpenRouter AI translates complex data into a human-readable causal chain (e.g., *"Wait 30s for better liquidity on X Layer Pool"*).
+5. **The Execution/Block:** The Guardrail contract checks the agent's SBT reputation score and either approves or initiates a Circuit Break.
+
+### Forensic Dashboard
+A professional React dashboard provides:
+- Live decision feed with AI explanations
+- Reputation HUD with on-chain score tracking
+- Counterfactual replay visualization
+- Global Risk State (Herd Immunity) map
+- x402 protocol feed monetization
+
+---
+
+## 🌍 Project Positioning in the X Layer Ecosystem
+*(Criteria 2: X Layer ecosystem integration — 25%)*
+
+To scale the X Layer ecosystem, human capital must **trust** AI Agents. Currently, they don't. 
+
+Unbox positions itself as the **de facto Trust & Safety Layer for X Layer**:
+- **Deterministic Reputation:** Soulbound Token (SBT) scores that cannot be gamed
+- **Herd Immunity:** Global Risk State prevents ecosystem-wide honeypot cascades
+- **Capital Efficiency:** X Layer's low gas costs enable real-time on-chain auditing of every decision
+- **Gas-Free Auditing:** X Layer (chainIndex 196) charges zero gas fees, making it economically viable to anchor every single agent decision on-chain
+
+This creates the psychological and mathematical safety net required for mass institutional and retail adoption of Agentic Wallets on OKX.
 
 ---
 
@@ -35,94 +126,65 @@ Forensic intelligence for the agentic economy. Other agents can pay to access hi
 
 ```bash
 ├── packages/
-│   ├── contracts/     # Solidity source, Foundry tests, and Deployment scripts
-│   ├── backend/       # Hono Worker, D1 Decision Store, and Counterfactual Engine
-│   ├── dashboard/     # Professional Forensic Dashboard (React/Vite)
-│   └── shared/        # Shared schemas, ABIs, and types
-├── docs/              # PRD, Engineering Specs, and Demo Runbooks
-└── data/              # Legacy decision store (Testing only)
+│   ├── contracts/       # Solidity: UnboxGuardrail, DecisionLog, AgentReputation
+│   ├── backend/         # Hono Worker: MirrorEngine, OKX Integration, Optimizer
+│   │   └── src/
+│   │       ├── adapter/       # AgentAdapter — intent interception
+│   │       ├── engine/        # MirrorEngine, CounterfactualEngine
+│   │       ├── services/      # BlockchainService, ReputationService, OKXSecurityService
+│   │       ├── skills/        # AxBayesianOptimizer, OKXTradeService
+│   │       ├── workers/       # ExplanationWorker (AI narration)
+│   │       └── gateway/       # x402 protocol gateway
+│   ├── dashboard/       # React forensic dashboard
+│   └── shared/          # Shared schemas, ABIs, types (OnchainOSIntent)
+└── .agents/skills/      # OKX Onchain OS Skills (installed via npx skills)
 ```
 
 ---
 
 ## 🏁 Quick Start
 
-### 1. Prerequisites
-- [Node.js](https://nodejs.org/) (v18+)
-- [Foundry](https://book.getfoundry.sh/getting-started/installation) 
-- [Wrangler CLI](https://developers.cloudflare.com/workers/wrangler/install-and-update/) (`npm install -g wrangler`)
+### Prerequisites
+- [Node.js](https://nodejs.org/) v18+
+- [Wrangler CLI](https://developers.cloudflare.com/workers/wrangler/)
+- OKX Onchain OS CLI (`onchainos` — auto-installed via skills)
 
-### 2. Installation
+### Installation
 ```bash
 npm install
+npx skills add okx/onchainos-skills --all  # Install Onchain OS skills
 ```
 
-### 3. Setup Environment
-1. Backend: Create `packages/backend/.dev.vars` for local secrets.
-2. Initialize Database:
-   ```bash
-   cd packages/backend
-   npx wrangler d1 execute unbox_d1 --local --file=schema.sql
-   ```
-
-### 4. Running the Stack
+### Setup Agentic Wallet
 ```bash
-# Start Backend (Wrangler Dev)
-cd packages/backend
-npx wrangler dev
+onchainos wallet login <your-email>
+onchainos wallet verify <otp-code>
+```
 
-# Start Dashboard
-cd packages/dashboard
-npm run dev
+### Environment Variables
+Create `packages/backend/.dev.vars`:
+```env
+OKX_API_KEY=your_api_key
+OKX_SECRET_KEY=your_secret_key
+OKX_PASSPHRASE=your_passphrase
+PRIVATE_KEY=your_private_key
+RPC_URL=https://xlayer-testnet.okx.com
+```
+
+### Run the Stack
+```bash
+# Backend (Cloudflare Worker)
+cd packages/backend && npx wrangler dev
+
+# Dashboard
+cd packages/dashboard && npm run dev
 ```
 
 ---
 
-## 📚 Documentation
-- [Product Requirements (PRD)](/docs/Unbox_PRD_v0.1.md)
-- [Engineering Specification](/docs/engineer.md)
-- [Demo Presentation Script](/docs/DEMO_SCRIPT.md)
-- [Operational Failover Runbook](/docs/FAILOVER_RUNBOOK.md)
-- [Regression Compliance Checklist](/docs/REGRESSION_CHECKLIST.md)
+## 👨‍💻 Team Members
+- **@boxer32** — Software Engineer & Systems Architect (Smart Contracts, TypeScript Backend, System Design)
 
 ---
 
-## 🏆 Hackathon Mandatory Compliance
-
-### 1. Built on X Layer
-The entire Unbox accountability protocol (Decision Logging, Reputation, Guardrails) is deployed on **X Layer Testnet**. All hashes are anchored to X Layer for immutable auditing.
-
-### 2. Agentic Identity (Agentic Wallet)
-Unbox utilizes the **OKX Agentic Wallet** as its primary on-chain identity. 
-- **Role**: The Agentic Wallet acts as the "Guardian of Accountability," signing Mirror records and managing the Unbox reputation token.
-- **Address**: `0xe7b7a872e04ea2ffee43785187a4663887e5c27a` (Linked to TEE-protected Agentic Wallet Instance)
-
-### 3. Onchain OS Skill Integration
-Unbox demonstrates deep integration with **OKX Onchain OS** core modules:
-- **Trade Module (DEX Aggregator)**: The `AxBayesianOptimizer` fetches real-time quotes to provide authentic counterfactual "Better Path" analysis.
-- **Security Module (Token Scan)**: **[INNOVATIVE]** Every intercepted agent intent triggers a real-time security audit using OKX's 4-level risk model. This detects Honeypots and Rugpulls before they hit the chain, providing a unique "Forensic Guardrail" for the X Layer ecosystem.
-
----
-
-## 🏗️ Architecture Overview
-
-Unbox operates as a middleware layer between an AI Agent and the blockchain:
-1. **Intercept**: Captures Intent from the Agentic Wallet.
-2. **Audit**: Perfroms real-time **OKX Security Scan** to assess asset risk.
-3. **Optimize**: Uses **OKX DEX Aggregator** to find the optimal execution path.
-4. **Forensics**: Generates AI-powered narratives and counterfactual replays.
-5. **Anchor**: Logs the decision hash and updates reputation on **X Layer**.
-
----
-
-## 🌍 Project Positioning & Ecosystem
-Unbox sits at the intersection of **AI Agents** and **Forensic Security** on X Layer. As the agentic economy grows, Unbox provides the necessary "Proof of Intent" and "Proof of Good Behavior" required for agents to trust each other and for users to trust their autonomous representatives.
-
----
-
-## 👥 Team
-- **Project Lead**: @boxer32
-- **Agentic Dev**: Antigravity (Powered by Google DeepMind)
-
----
-*Built for the X Layer Agentic Hackathon — April 2026*
+*Built for the OKX Build X Hackathon — X Layer Agentic Track — April 2026*

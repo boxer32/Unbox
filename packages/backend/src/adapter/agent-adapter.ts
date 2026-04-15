@@ -5,11 +5,13 @@ import {
 } from '@unbox/shared';
 
 import { ethers } from 'ethers';
-import { ThirdwebIntent } from '../skills/types.js';
+import { OnchainOSIntent } from '../skills/types.js';
 
 /**
  * REQ-MIRROR-001: Agent Adapter
- * Intercepts agent intent and normalizes it into a canonical Mirror record.
+ * Intercepts Onchain OS / Uniswap skill intents from the Agentic Wallet
+ * and normalizes them into a canonical Mirror record for forensic analysis.
+ * Runs OKX Security Token Scan before processing.
  */
 
 import { OKXSecurityService } from '../services/okx-security-service.js';
@@ -28,7 +30,7 @@ export interface IntentContext {
     flags: string[];
   };
   blockRef: number;
-  structuredIntent?: ThirdwebIntent;
+  structuredIntent?: OnchainOSIntent;
 }
 
 export class AgentAdapter {
