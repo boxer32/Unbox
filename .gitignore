@@ -5,3 +5,8 @@
 !.env.example
 !**/.env.example
 node_modules
+dist
+data
+.wrangler
+.dev.vars
+docs/

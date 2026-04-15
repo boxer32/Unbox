@@ -1,7 +1,9 @@
 import { ReputationService } from '../src/services/reputation-service';
+import { BlockchainService } from '../src/services/blockchain-service';
 
 async function main() {
-  const service = new ReputationService();
+  const blockchain = new BlockchainService();
+  const service = new ReputationService(blockchain);
   
   console.log("--- Starting Integrated Score Sync Test ---");
   
