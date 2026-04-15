@@ -95,7 +95,7 @@ The entire Unbox accountability protocol (Decision Logging, Reputation, Guardrai
 ### 2. Agentic Identity (Agentic Wallet)
 Unbox utilizes the **OKX Agentic Wallet** as its primary on-chain identity. 
 - **Role**: The Agentic Wallet acts as the "Guardian of Accountability," signing Mirror records and managing the Unbox reputation token.
-- **Address**: `0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80` (Linked to Agentic Wallet Instance)
+- **Address**: `0xe7b7a872e04ea2ffee43785187a4663887e5c27a` (Linked to TEE-protected Agentic Wallet Instance)
 
 ### 3. Onchain OS Skill Integration
 Unbox integrates the **OKX Onchain OS Trade Module** (DEX Aggregator):
