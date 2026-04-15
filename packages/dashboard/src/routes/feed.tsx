@@ -1,28 +1,72 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import React, { useState } from 'react';
 import { DashboardLayout } from '../components/DashboardLayout.js';
 import { 
   Lock, Zap, ShieldCheck, AlertCircle, ArrowRight, 
   CreditCard, Loader2, Database, Clock, 
-  CheckCircle2, Circle, ArrowDownCircle
+  CheckCircle2, Circle, ArrowDownCircle, ShoppingCart, Info, TrendingUp, BarChart
 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { useMutation, useQuery } from '@tanstack/react-query';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-import { useMutation } from '@tanstack/react-query';
-
 export const Route = createFileRoute('/feed')({
   component: FeedPage,
 })
 
-type FeedState = 'requested' | 'challenge' | 'paid' | 'verified' | 'delivered';
+type FeedState = 'onboarding' | 'challenge' | 'verified' | 'delivered';
+
+interface DataBatch {
+  id: string;
+  title: string;
+  description: string;
+  price: string;
+  items: number;
+  confidence: number;
+  type: 'security' | 'alpha' | 'governance';
+  tag: string;
+}
+
+const AVAILABLE_BATCHS: DataBatch[] = [
+  {
+    id: 'batch-sec-01',
+    title: 'X Layer Threat Intel (Last 100 Blocks)',
+    description: 'Aggregated security flags from Mirror Engine targeting high-risk dex pairs.',
+    price: '0.0001',
+    items: 42,
+    confidence: 99.4,
+    type: 'security',
+    tag: 'REQ-FEED-BATCH'
+  },
+  {
+    id: 'batch-alpha-04',
+    title: 'Deep Liquidity Shifts (Arbitrage Path)',
+    description: 'Decision traces from Bayesian Optimizer detecting hidden arbitrage routes.',
+    price: '0.0005',
+    items: 12,
+    confidence: 88.2,
+    type: 'alpha',
+    tag: 'ALPHA-ALPHA'
+  },
+  {
+    id: 'batch-gov-12',
+    title: 'Agent Governance Sentiment Feed',
+    description: 'Voting intention logs and counterfactual impacts for current proposals.',
+    price: '0.0002',
+    items: 85,
+    confidence: 94.0,
+    type: 'governance',
+    tag: 'GOV-LOGS'
+  }
+];
 
 function FeedPage() {
-  const [step, setStep] = useState<FeedState>('challenge');
+  const [step, setStep] = useState<FeedState>('onboarding');
+  const [selectedBatch, setSelectedBatch] = useState<DataBatch | null>(null);
   const [txHash, setTxHash] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -39,24 +83,30 @@ function FeedPage() {
       });
       if (!response.ok) {
         const err = await response.json();
-        throw new Error(err.error || 'Verification failed. Ensure the transaction is confirmed on X Layer Testnet.');
+        throw new Error(err.error || 'Payment verification failed.');
       }
       return response.json();
     },
     onSuccess: (data) => {
-      setDeliveredData(data);
-      setStep('delivered');
+      setDeliveredData(data.deliveredData);
+      setStep('delivered' as any);
       setIsProcessing(false);
     },
     onError: (error: Error) => {
       setErrorMessage(error.message);
       setIsProcessing(false);
+      setStep('challenge');
     }
   });
 
+  const startChallenge = (batch: DataBatch) => {
+    setSelectedBatch(batch);
+    setStep('challenge');
+  };
+
   const handleRedeem = () => {
-    if (!txHash.startsWith('0x') || txHash.length !== 66) {
-      setErrorMessage('Please enter a valid Transaction Hash (0x...)');
+    if (!txHash.startsWith('0x')) {
+      setErrorMessage('Valid TxHash (0x...) required');
       return;
     }
     setIsProcessing(true);
@@ -68,194 +118,269 @@ function FeedPage() {
   return (
     <DashboardLayout>
       <main className="max-w-7xl mx-auto p-8 space-y-12">
-        {/* Header */}
-        <div className="flex justify-between items-center border-b border-white/5 pb-8">
-           <div>
-              <h1 className="text-4xl font-black text-white tracking-tight flex items-center gap-3">
-                <Database className="w-8 h-8 text-unbox-green" />
-                Unbox Feed Console
-              </h1>
-              <p className="text-white/40 mt-2 font-medium">REQ-FEED-001: x402 machine-to-machine payment gateway.</p>
-           </div>
-           <div className="flex gap-4">
-              <span className="px-3 py-1 bg-white/5 rounded-full border border-white/10 text-[10px] uppercase font-bold text-white/40 flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-unbox-green animate-pulse" />
-                Live Channel #104
-              </span>
-           </div>
-        </div>
+        {/* Header - REQ-FEED-001 Consistency */}
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-white/5 pb-10">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+               <div className="w-10 h-10 bg-unbox-amber/20 rounded-xl flex items-center justify-center border border-unbox-amber/30">
+                  <Database className="w-6 h-6 text-unbox-amber" />
+               </div>
+               <div>
+                  <h1 className="text-4xl font-black text-white tracking-tighter uppercase italic">Intelligence Feed</h1>
+                  <p className="text-[10px] font-black uppercase tracking-[0.4em] text-unbox-amber">Monetizable Intelligence Streams (REQ-FEED-001)</p>
+               </div>
+            </div>
+            <p className="text-sm text-white/40 max-w-xl font-medium leading-relaxed">
+              Access high-confidence decision batches from X Layer agents gated via atomic 402 settlement. 
+              Built for agents, by agents.
+            </p>
+          </div>
+          <div className="flex items-center gap-4">
+             <div className="text-right">
+                <p className="text-[8px] font-black uppercase tracking-widest text-white/20">Protocol Revenue Split</p>
+                <p className="text-xs font-black text-unbox-green">80% AGENT / 20% PROTOCOL</p>
+             </div>
+          </div>
+        </header>
 
-        {/* UX-4.4.1: Request State Timeline */}
-        <div className="max-w-4xl mx-auto">
-           <div className="flex items-center justify-between relative px-4">
-             {/* Connector Line */}
-             <div className="absolute top-1/2 left-0 w-full h-[1px] bg-white/5 -z-10" />
-             
-             <TimelineStep status={step === 'requested' ? 'active' : 'done'} label="Requested" />
-             <TimelineStep status={step === 'challenge' ? 'active' : step === 'requested' ? 'pending' : 'done'} label="402 Challenge" />
-             <TimelineStep status={step === 'paid' ? 'active' : (step === 'delivered' || step === 'verified') ? 'done' : 'pending'} label="Paid" />
-             <TimelineStep status={step === 'verified' ? 'active' : step === 'delivered' ? 'done' : 'pending'} label="Verified" />
-             <TimelineStep status={step === 'delivered' ? 'active' : 'pending'} label="Delivered" />
-           </div>
-        </div>
+        {step === 'onboarding' && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            {AVAILABLE_BATCHS.map((batch) => (
+              <BatchCard key={batch.id} batch={batch} onSelect={() => startChallenge(batch)} />
+            ))}
+          </div>
+        )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-start">
-           {/* Main Feed Content Area */}
-           <div className="lg:col-span-2 space-y-6">
-              {step !== 'delivered' ? (
-                /* UX-4.4.2: Payment Spec Panel (Locked State) */
-                <div className="glass-card p-12 text-center space-y-8 bg-unbox-amber/5 border-unbox-amber/10">
-                   <div className="w-16 h-16 bg-unbox-amber/10 rounded-2xl border border-unbox-amber/20 flex items-center justify-center mx-auto">
-                      <Lock className="w-8 h-8 text-unbox-amber" />
-                   </div>
-                   <div className="space-y-2">
-                      <h3 className="text-2xl font-bold uppercase tracking-tighter">Locked Intelligence</h3>
-                      <p className="text-sm text-white/30 max-w-sm mx-auto leading-relaxed">
-                        Machine payload contains deterministic risk signals for Alpha-Trader. Access requires atomic settlement.
-                      </p>
-                   </div>
-                   
-                   <div className="max-w-sm mx-auto p-6 bg-black/40 rounded-2xl border border-white/5 space-y-4">
-                       <div className="grid grid-cols-2 gap-4 text-left border-b border-white/5 pb-4 mb-4">
-                          <SpecItem label="Asset" value="X-LAYER ETH" />
-                          <SpecItem label="Network" value="X Layer Testnet" />
-                       </div>
+        {(step === 'challenge' || step === 'verified') && selectedBatch && (
+          <div className="max-w-4xl mx-auto space-y-8 animate-in zoom-in-95 duration-500">
+            {/* Timeline Progress */}
+             <div className="flex items-center justify-between relative px-2 mb-12">
+                <div className="absolute top-4 left-0 w-full h-[1px] bg-white/5 -z-10" />
+                <TimelineStep status="done" label="Selected" />
+                <TimelineStep status="active" label="402 Spec" />
+                <TimelineStep status={step === 'verified' ? 'active' : 'pending'} label="Verification" />
+                <TimelineStep status="pending" label="Delivery" />
+             </div>
 
-                       <div className="space-y-2">
-                          <p className="text-[9px] uppercase tracking-widest text-unbox-amber font-bold text-left">Paste Transaction Hash (TxHash)</p>
-                          <input 
-                            type="text" 
-                            placeholder="0x..."
-                            value={txHash}
-                            onChange={(e) => setTxHash(e.target.value)}
-                            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-xs font-mono text-white focus:border-unbox-amber outline-none transition-colors"
-                          />
-                       </div>
-
-                       {errorMessage && (
-                         <div className="p-3 bg-unbox-red/10 border border-unbox-red/20 rounded-lg text-[10px] text-unbox-red flex items-center gap-2">
-                           <AlertCircle className="w-3 h-3" />
-                           {errorMessage}
-                         </div>
-                       )}
-
-                       <button 
-                          onClick={handleRedeem}
-                          disabled={isProcessing || !txHash}
-                          className="w-full py-4 bg-unbox-amber text-black font-black uppercase text-xs tracking-widest rounded-xl flex items-center justify-center gap-2 shadow-[0_0_30px_rgba(245,158,11,0.2)] disabled:opacity-30 transition-all hover:scale-[1.02]"
-                       >
-                          {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
-                          {isProcessing ? 'Verifying on X Layer...' : 'Verify & Unbox Intelligence'}
-                       </button>
+             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                <div className="lg:col-span-12">
+                  <div className="glass-card p-10 bg-unbox-amber/5 border-unbox-amber/20 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-8 opacity-5">
+                      <Lock className="w-32 h-32 text-unbox-amber" />
                     </div>
+
+                    <div className="flex flex-col md:flex-row gap-12">
+                       <div className="flex-1 space-y-8">
+                          <div className="space-y-2">
+                             <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-unbox-amber">
+                                <Zap className="w-3 h-3" />
+                                Payment Challenge Issued (402)
+                             </div>
+                             <h2 className="text-4xl font-black tracking-tighter italic">{selectedBatch.title}</h2>
+                             <p className="text-white/50 text-sm leading-relaxed">{selectedBatch.description}</p>
+                          </div>
+
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 p-6 bg-black/40 rounded-xl border border-white/5">
+                             <SpecItem label="Price" value={`${selectedBatch.price} OKB`} highlight />
+                             <SpecItem label="Asset" value="X-LAYER NAT" />
+                             <SpecItem label="Items" value={`${selectedBatch.items} Entries`} />
+                             <SpecItem label="Confidence" value={`${selectedBatch.confidence}%`} />
+                          </div>
+
+                          <div className="flex flex-col md:flex-row gap-6 items-end">
+                             <div className="flex-1 space-y-3 w-full">
+                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30">Proof of Payment (TxHash)</p>
+                                <input 
+                                  className="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-xs font-mono focus:border-unbox-amber outline-none transition-all"
+                                  placeholder="0x..."
+                                  value={txHash}
+                                  onChange={(e) => setTxHash(e.target.value)}
+                                />
+                             </div>
+                             <button 
+                                onClick={handleRedeem}
+                                disabled={isProcessing || !txHash}
+                                className="w-full md:w-auto px-10 py-4 bg-unbox-amber text-black font-black uppercase text-xs tracking-widest rounded-xl hover:scale-105 transition-all disabled:opacity-30 shadow-[0_15px_30px_-10px_rgba(245,158,11,0.3)]"
+                             >
+                                {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Settle x402'}
+                             </button>
+                          </div>
+                          {errorMessage && <p className="text-[10px] text-red-500 font-bold uppercase tracking-widest animate-bounce">{errorMessage}</p>}
+                       </div>
+
+                       <div className="w-full md:w-72 space-y-6">
+                         <div className="glass-card p-6 bg-white/[0.02] border-white/5 space-y-6">
+                            <h4 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em]">Revenue Split Map</h4>
+                            <SplitProgress label="Source Agent" percent={80} amount={`${(Number(selectedBatch.price) * 0.8).toFixed(5)} OKB`} />
+                            <SplitProgress label="Unbox Protocol" percent={20} amount={`${(Number(selectedBatch.price) * 0.2).toFixed(5)} OKB`} />
+                            <div className="pt-4 border-t border-white/5 flex items-center gap-2 text-[8px] text-white/20 font-bold tracking-widest leading-relaxed">
+                               <Info className="w-3 h-3 shrink-0" />
+                               SETTLEMENT IS ATOMIC ON X LAYER TESTNET (REQ-FEED-003)
+                            </div>
+                         </div>
+                       </div>
+                    </div>
+                  </div>
                 </div>
-              ) : (
-                /* UX-4.4.3: Delivery Result (Unlocked State) */
-                <div className="space-y-8 animate-in fade-in duration-700">
-                   <div className="glass-card p-8 space-y-6 border-unbox-green/20 bg-unbox-green/5">
-                      <div className="flex items-center gap-2 text-unbox-green font-black uppercase text-[10px] tracking-widest">
-                         <ShieldCheck className="w-4 h-4" />
-                         Intelligence Delivered • Batch #{deliveredData?.batchId ?? 'UC-9941'}
+             </div>
+          </div>
+        )}
+
+        {step === ('delivered' as any) && deliveredData && (
+          <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-1000">
+             <div className="flex items-center justify-between relative px-2 mb-12">
+                <div className="absolute top-4 left-0 w-full h-[1px] bg-white/5 -z-10" />
+                <TimelineStep status="done" label="Selected" />
+                <TimelineStep status="done" label="Challenge" />
+                <TimelineStep status="done" label="Verified" />
+                <TimelineStep status="active" label="Intelligence" />
+             </div>
+
+             <div className="glass-card p-12 bg-unbox-green/[0.03] border-unbox-green/20 relative overflow-hidden group">
+                <div className="absolute inset-0 bg-grid opacity-10 pointer-events-none" />
+                <div className="absolute top-0 right-0 p-8">
+                   <CheckCircle2 className="w-20 h-20 text-unbox-green opacity-20 group-hover:scale-110 transition-transform" />
+                </div>
+
+                <div className="space-y-10 relative z-10">
+                   <div className="space-y-2">
+                      <div className="inline-flex items-center gap-2 px-3 py-1 bg-unbox-green/10 border border-unbox-green/20 rounded-full text-[9px] font-black uppercase tracking-widest text-unbox-green">
+                         Batch Ref: {deliveredData.batchId}
                       </div>
-                      <div className="space-y-4">
-                         <h3 className="text-2xl font-bold">{deliveredData?.insightTitle ?? 'Alpha Trader Liquidity Insight'}</h3>
-                         <p className="text-white/50 leading-relaxed text-sm">
-                            {deliveredData?.insightBody ?? 'Detected 12.4% liquidity drop on pair ETH/USDC. Recommendation: Invert next 2 execution intents to defensive mode until volatility resets.'}
-                         </p>
+                      <h2 className="text-5xl font-black tracking-tighter text-white italic">{deliveredData.insightTitle}</h2>
+                   </div>
+
+                   <p className="text-xl text-white/70 leading-relaxed font-medium max-w-3xl">
+                      {deliveredData.insightBody}
+                   </p>
+
+                   <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                      <DataPoint icon={TrendingUp} label="Confidence" value={deliveredData.confidence} />
+                      <DataPoint icon={Clock} label="Mirror Latency" value={deliveredData.latency} />
+                      <DataPoint icon={BarChart} label="Sample Size" value={`${deliveredData.itemsCount} Decisions`} />
+                      <DataPoint icon={Info} label="System Block" value={deliveredData.block} />
+                   </div>
+
+                   <div className="pt-8 border-t border-white/5 flex justify-between items-center">
+                      <div className="flex gap-4">
+                         <button className="px-6 py-3 bg-white text-black font-black uppercase text-[10px] tracking-widest rounded transition-all hover:bg-unbox-green">Export raw JSON</button>
+                         <button className="px-6 py-3 bg-transparent border border-white/10 text-white/40 font-black uppercase text-[10px] tracking-widest rounded hover:bg-white/5">View On Explorer</button>
                       </div>
-                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                         <MiniStat label="Latency" value={deliveredData?.latency ?? '2.4s'} />
-                         <MiniStat label="Items" value={`${deliveredData?.itemsCount ?? 12}`} />
-                         <MiniStat label="Confidence" value={deliveredData?.confidence ?? '98%'} />
-                         <MiniStat label="Block" value={deliveredData?.block ?? '#124K'} />
-                      </div>
+                      <button onClick={() => setStep('onboarding')} className="text-unbox-amber text-[10px] font-black uppercase tracking-widest hover:underline px-4 py-2">Return to Marketplace</button>
                    </div>
                 </div>
-              )}
-           </div>
-
-           {/* Sidebar: Settlement & Revenue Split (UX-4.4.4) */}
-           <div className="space-y-6">
-              <div className="glass-card p-6 space-y-6">
-                 <h4 className="text-xs font-bold text-white/30 uppercase tracking-[0.2em] flex items-center gap-2">
-                    <ArrowDownCircle className="w-4 h-4" />
-                    Settlement Policy
-                 </h4>
-                 
-                 <div className="space-y-4">
-                    <SplitRow label="Source Agent" percentage={80} amount="0.0008 ETH" color="text-unbox-green" />
-                    <SplitRow label="Unbox Protocol" percentage={20} amount="0.0002 ETH" color="text-white/40" />
-                 </div>
-
-                 <div className="pt-6 border-t border-white/5 text-[10px] text-white/30 leading-relaxed">
-                    REQ-FEED-003: Settlement is atomic and occurs on-chain via UnboxFeedSettlement contract. 
-                    Calculations follow the 80/20 non-negotiable split.
-                 </div>
-              </div>
-
-              <div className="glass-card p-6 bg-gradient-to-br from-unbox-green/10 to-transparent">
-                 <div className="flex items-center gap-2 mb-4">
-                    <div className="w-2 h-2 rounded-full bg-unbox-green animate-pulse" />
-                    <span className="text-[10px] font-black uppercase text-unbox-green tracking-widest">Live Auditor</span>
-                 </div>
-                 <p className="text-xs text-white/60 leading-relaxed">
-                    Connected to X Layer Testnet. All hashes and settlement proofs are verifiable via the explorer.
-                 </p>
-              </div>
-           </div>
-        </div>
+             </div>
+          </div>
+        )}
       </main>
     </DashboardLayout>
   )
 }
 
+function BatchCard({ batch, onSelect }: { batch: DataBatch; onSelect: () => void }) {
+  return (
+    <div className="premium-border group h-full">
+      <div className="glass-card p-8 bg-white/[0.02] border-white/5 h-full flex flex-col gap-6 relative overflow-hidden">
+        <div className={cn(
+          "absolute top-0 right-0 p-6 opacity-5 transition-transform group-hover:scale-110",
+          batch.type === 'security' ? 'text-red-500' : batch.type === 'alpha' ? 'text-unbox-amber' : 'text-unbox-green'
+        )}>
+           <Database className="w-20 h-20" />
+        </div>
+        
+        <div className="flex justify-between items-start relative z-10">
+           <div className={cn(
+              "px-3 py-1 rounded text-[9px] font-black uppercase tracking-widest border",
+              batch.type === 'security' ? 'border-red-500/20 text-red-500 bg-red-500/5' :
+              batch.type === 'alpha' ? 'border-unbox-amber/20 text-unbox-amber bg-unbox-amber/5' :
+              'border-unbox-green/20 text-unbox-green bg-unbox-green/5'
+           )}>
+              {batch.type} feed
+           </div>
+           <span className="text-white/20 text-[9px] font-mono tracking-widest uppercase">{batch.tag}</span>
+        </div>
+
+        <div className="space-y-3 relative z-10">
+           <h3 className="text-xl font-black tracking-tight leading-tight uppercase group-hover:text-unbox-amber transition-colors">{batch.title}</h3>
+           <p className="text-white/40 text-sm font-medium leading-relaxed">{batch.description}</p>
+        </div>
+
+        <div className="mt-auto space-y-6 relative z-10">
+           <div className="flex justify-between items-center py-4 border-y border-white/5">
+              <div className="space-y-1">
+                 <p className="text-[8px] font-black uppercase text-white/20 tracking-widest">Entry Price</p>
+                 <p className="text-lg font-black text-white tabular-nums">{batch.price} <span className="text-[10px] text-white/20">OKB</span></p>
+              </div>
+              <div className="text-right space-y-1">
+                 <p className="text-[8px] font-black uppercase text-white/20 tracking-widest">Confidence Score</p>
+                 <p className="text-lg font-black text-unbox-green tabular-nums">{batch.confidence}%</p>
+              </div>
+           </div>
+           <button 
+             onClick={onSelect}
+             className="w-full py-4 bg-white/5 border border-white/10 text-white font-black uppercase text-[10px] tracking-widest rounded-sm hover:bg-unbox-amber hover:text-black transition-all group-hover:translate-y-[-2px]"
+           >
+              Unlock Intelligence
+           </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function SpecItem({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+  return (
+    <div className="space-y-1 border-l border-white/5 pl-4">
+       <p className="text-[8px] text-white/30 uppercase font-black tracking-[0.2em]">{label}</p>
+       <p className={cn("text-sm font-black tracking-tight", highlight ? "text-unbox-amber" : "text-white")}>{value}</p>
+    </div>
+  )
+}
+
+function SplitProgress({ label, percent, amount }: { label: string, percent: number, amount: string }) {
+  return (
+    <div className="space-y-3">
+       <div className="flex justify-between items-end">
+          <span className="text-[9px] font-black text-white/60 uppercase tracking-widest">{label}</span>
+          <span className="text-xs font-black text-white">{percent}%</span>
+       </div>
+       <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+          <div className="h-full bg-unbox-amber rounded-full" style={{ width: `${percent}%` }} />
+       </div>
+       <div className="bg-black/40 p-2 rounded-lg border border-white/5">
+          <span className="text-[9px] font-mono text-unbox-amber">{amount}</span>
+       </div>
+    </div>
+  )
+}
+
+function DataPoint({ icon: Icon, label, value }: { icon: any, label: string; value: string }) {
+  return (
+    <div className="space-y-3 group cursor-default">
+       <div className="flex items-center gap-2">
+          <Icon className="w-3.5 h-3.5 text-unbox-green group-hover:scale-110 transition-transform" />
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30">{label}</span>
+       </div>
+       <div className="text-xl font-black text-white font-mono">{value}</div>
+    </div>
+  )
+}
+
 function TimelineStep({ status, label }: { status: 'done' | 'active' | 'pending'; label: string }) {
   return (
-    <div className="flex flex-col items-center gap-2 relative">
+    <div className="flex flex-col items-center gap-3 relative">
        <div className={cn(
-         "w-8 h-8 rounded-full flex items-center justify-center transition-all duration-500 border-2",
+         "w-9 h-9 rounded-full flex items-center justify-center transition-all duration-500 border-2",
          status === 'done' ? "bg-unbox-green border-unbox-green text-black" :
-         status === 'active' ? "bg-black border-unbox-green text-unbox-green shadow-[0_0_15px_rgba(16,185,129,0.5)]" :
-         "bg-unbox-dark border-white/10 text-white/20"
+         status === 'active' ? "bg-black border-unbox-green text-unbox-green shadow-[0_0_15px_rgba(16,185,129,0.5)] animate-pulse" :
+         "bg-black border-white/10 text-white/20"
        )}>
-         {status === 'done' ? <CheckCircle2 className="w-4 h-4" /> : status === 'active' ? <Clock className="w-4 h-4 animate-pulse" /> : <Circle className="w-4 h-4 fill-current opacity-20" />}
+         {status === 'done' ? <CheckCircle2 className="w-4 h-4" /> : status === 'active' ? <Clock className="w-4 h-4" /> : <Circle className="w-4 h-4 fill-current opacity-10" />}
        </div>
        <span className={cn(
-         "text-[10px] font-bold uppercase tracking-widest transition-colors duration-500",
-         status === 'pending' ? "text-white/20" : "text-white/80"
+         "text-[9px] font-black uppercase tracking-[0.2em] transition-colors duration-500",
+         status === 'pending' ? "text-white/10" : "text-white/60"
        )}>{label}</span>
-    </div>
-  )
-}
-
-function SpecItem({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="space-y-1">
-       <p className="text-[8px] text-white/30 uppercase font-bold tracking-widest">{label}</p>
-       <p className="text-xs font-black text-white">{value}</p>
-    </div>
-  )
-}
-
-function SplitRow({ label, percentage, amount, color }: { label: string, percentage: number, amount: string, color: string }) {
-  return (
-    <div className="space-y-2">
-       <div className="flex justify-between text-xs font-bold">
-          <span className="text-white/60">{label}</span>
-          <span className={color}>{percentage}%</span>
-       </div>
-       <div className="flex justify-between items-center bg-black/40 p-2 rounded-lg border border-white/5">
-          <span className="text-[10px] font-mono text-white/30">{amount}</span>
-       </div>
-    </div>
-  )
-}
-
-function MiniStat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="p-3 bg-white/5 rounded-xl border border-white/5">
-       <div className="text-[8px] uppercase text-white/30 font-bold mb-1">{label}</div>
-       <div className="text-sm font-black text-white font-mono">{value}</div>
     </div>
   )
 }

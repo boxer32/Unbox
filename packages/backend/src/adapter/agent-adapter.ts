@@ -30,6 +30,7 @@ export interface IntentContext {
     flags: string[];
   };
   blockRef: number;
+  txHash?: string;
   structuredIntent?: OnchainOSIntent;
 }
 
@@ -73,7 +74,8 @@ export class AgentAdapter {
       securityScan,
       blockRef: context.blockRef,
       timestampMs,
-      targetAddress
+      targetAddress,
+      txHash: context.txHash
     };
 
     // REQ-MIRROR-002: Generate deterministic hash for on-chain anchoring

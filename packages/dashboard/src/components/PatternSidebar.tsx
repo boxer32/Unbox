@@ -22,7 +22,7 @@ export const PatternSidebar: React.FC<PatternSidebarProps> = ({ patterns }) => {
     : patterns;
 
   return (
-    <div className="glass-card p-6 space-y-6">
+    <div id="pattern-sidebar" className="glass-card p-6 space-y-6">
       <h3 className="text-sm font-medium text-white/40 uppercase tracking-wider flex items-center gap-2">
         <Target className="w-4 h-4" />
         Detected Patterns

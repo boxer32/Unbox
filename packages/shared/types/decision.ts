@@ -29,6 +29,7 @@ export const DecisionPayloadSchema = z.object({
   blockRef: z.number().int().positive().describe('X Layer block number reference'),
   timestampMs: z.number().int().describe('Unix timestamp in milliseconds'),
   payloadHash: z.string().describe('Deterministic hash of the payload for on-chain anchoring'),
+  txHash: z.string().optional().describe('X Layer transaction hash if executed'),
   explanation: z.any().optional().describe('Plain-language block explanation or structural JSON'),
   targetAddress: z.string().optional().describe('Target contract or wallet address involved in the decision'),
   replays: z.array(z.any()).optional().describe('Counterfactual replay results'),

@@ -31,7 +31,10 @@ export const AnomalyBar: React.FC<AnomalyBarProps> = ({ anomaly }) => {
               {anomaly.flag}
             </span>
           )}
-          <button className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-[10px] font-black uppercase tracking-widest text-white transition-all rounded group">
+          <button 
+            onClick={() => document.getElementById('pattern-sidebar')?.scrollIntoView({ behavior: 'smooth' })}
+            className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-[10px] font-black uppercase tracking-widest text-white transition-all rounded group"
+          >
             Investigate Patterns
             <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
           </button>

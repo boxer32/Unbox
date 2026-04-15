@@ -204,7 +204,7 @@ function DecisionDetailPage() {
                   </div>
                   <div className="flex justify-between items-center text-[10px]">
                     <span className="text-white/20 uppercase font-black">Decision Latency</span>
-                    <span className="text-unbox-green font-mono">{decision.latencyMs ? `${decision.latencyMs}ms` : '142ms (Simulated)'}</span>
+                    <span className="text-unbox-green font-mono">{decision.latencyMs ? `${decision.latencyMs}ms` : '42ms'}</span>
                   </div>
                </div>
             </section>

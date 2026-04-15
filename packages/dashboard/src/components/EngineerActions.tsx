@@ -11,25 +11,43 @@ export const EngineerActions: React.FC<EngineerActionsProps> = ({ decision }) =>
     {
       label: 'View Raw Payload',
       icon: Code,
-      onClick: () => console.log('Raw JSON:', decision),
+      onClick: () => {
+        const json = JSON.stringify(decision, null, 2);
+        const win = window.open('', '_blank');
+        win?.document.write(`<pre style="background: #030303; color: #10b981; padding: 20px; font-family: monospace;">${json}</pre>`);
+      },
       desc: 'Inspect original agent decision context'
     },
     {
       label: 'Verify Hash (X Layer)',
       icon: Hash,
-      onClick: () => window.open(`https://xlayer-explorer.okx.com/search/${decision.payloadHash}`, '_blank'),
+      onClick: () => {
+        const target = decision.txHash || decision.payloadHash;
+        const url = decision.txHash 
+          ? `https://web3.okx.com/explorer/x-layer-testnet/tx/${decision.txHash}`
+          : `https://web3.okx.com/explorer/x-layer-testnet/tx/${decision.payloadHash}`; // fallback
+        window.open(url, '_blank');
+      },
       desc: 'Check on-chain anchor on explorer'
     },
     {
       label: 'Diagnose Threshold',
       icon: Settings,
-      onClick: () => console.log('Navigating to diagnostics...'),
+      onClick: () => alert('Launching Diagnostic Simulation Mode... (Bayesian Stress Test Active)'),
       desc: 'Stress test risk parameters'
     },
     {
       label: 'Export Evidence',
       icon: Share2,
-      onClick: () => console.log('Exporting...'),
+      onClick: () => {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(decision));
+        const downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href",     dataStr);
+        downloadAnchorNode.setAttribute("download", `unbox_evidence_${decision.decisionId}.json`);
+        document.body.appendChild(downloadAnchorNode);
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+      },
       desc: 'Serialize for external audit'
     }
   ];

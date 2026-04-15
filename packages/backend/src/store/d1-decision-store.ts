@@ -84,6 +84,21 @@ export class D1DecisionStore implements IDecisionStore {
     }
   }
 
+  public async getStats(): Promise<{ total: number, sinceLastHour: number }> {
+    try {
+      const total = await this.db.prepare(`SELECT COUNT(*) as count FROM decisions`).first<{ count: number }>();
+      const hourAgo = Date.now() - 3600000;
+      const sinceLastHour = await this.db.prepare(`SELECT COUNT(*) as count FROM decisions WHERE timestampMs > ?`).bind(hourAgo).first<{ count: number }>();
+      
+      return { 
+        total: total?.count || 0, 
+        sinceLastHour: sinceLastHour?.count || 0 
+      };
+    } catch (error) {
+       return { total: 0, sinceLastHour: 0 };
+    }
+  }
+
   public async getGlobalRiskState(): Promise<any> {
     try {
       const row = await this.db.prepare(

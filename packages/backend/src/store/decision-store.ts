@@ -8,6 +8,7 @@ export interface IDecisionStore {
   save(payload: DecisionPayload): Promise<void>;
   get(decisionId: string): Promise<DecisionPayload | null>;
   list(limit?: number): Promise<DecisionPayload[]>;
+  getStats(): Promise<{ total: number, sinceLastHour: number }>;
   getGlobalRiskState(): Promise<Array<{ flag: string; count: number }>>;
 }
 

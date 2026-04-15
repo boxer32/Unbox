@@ -17,6 +17,8 @@ export const OptimizationPanel: React.FC<OptimizationPanelProps> = ({ optimizati
   if (!optimization) return null;
 
   const isBlocked = handshakeStatus === 'blocked';
+  const slippagePct = (optimization as any).improvements?.slippageSaved || (optimization as any).slippageSaved || 0;
+  const gasK = Number(((optimization as any).improvements?.gasSaved || (optimization as any).gasSaved || 0) / 1000).toFixed(1);
 
   return (
     <div className="glass-card overflow-hidden group">
@@ -58,14 +60,14 @@ export const OptimizationPanel: React.FC<OptimizationPanelProps> = ({ optimizati
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 relative z-10">
+            <div className="grid grid-cols-2 gap-4 relative z-10">
             <div className="space-y-1">
               <span className="text-[8px] uppercase tracking-widest text-white/30">Target Route</span>
-              <p className="text-sm font-mono text-white font-bold">{(optimization.optimizedPayload as any).targetRoute || 'Canonical'}</p>
+              <p className="text-sm font-mono text-white font-bold">{(optimization as any).optimizedPayload?.targetRoute || (optimization as any).targetRoute || 'Canonical'}</p>
             </div>
             <div className="space-y-1">
               <span className="text-[8px] uppercase tracking-widest text-white/30">Slippage Limit</span>
-              <p className="text-sm font-mono text-unbox-green font-bold">{(optimization.optimizedPayload as any).recommendedSlippage * 100}%</p>
+              <p className="text-sm font-mono text-unbox-green font-bold">{((optimization as any).optimizedPayload?.recommendedSlippage || 0.005) * 100}%</p>
             </div>
           </div>
         </div>
@@ -77,9 +79,12 @@ export const OptimizationPanel: React.FC<OptimizationPanelProps> = ({ optimizati
               <TrendingDown className="w-3 h-3 text-unbox-green" />
               <span className="text-[8px] font-black uppercase tracking-widest text-white/40">Slippage Saved</span>
             </div>
-            <p className="text-xl font-black text-white">{optimization.improvements.slippageSaved}%</p>
+            <p className="text-xl font-black text-white">{slippagePct}%</p>
             <div className="mt-2 w-full bg-white/5 h-1 rounded-full overflow-hidden">
-              <div className="bg-unbox-green h-full w-[15%]" />
+              <div 
+                className="bg-unbox-green h-full transition-all duration-1000" 
+                style={{ width: `${Math.min(100, (slippagePct / 2) * 100)}%` }} 
+              />
             </div>
           </div>
 
@@ -88,9 +93,12 @@ export const OptimizationPanel: React.FC<OptimizationPanelProps> = ({ optimizati
               <Gauge className="w-3 h-3 text-unbox-green" />
               <span className="text-[8px] font-black uppercase tracking-widest text-white/40">Gas Optimized</span>
             </div>
-            <p className="text-xl font-black text-white">{(optimization.improvements.gasSaved / 1000).toFixed(1)}k</p>
+            <p className="text-xl font-black text-white">{gasK}k</p>
             <div className="mt-2 w-full bg-white/5 h-1 rounded-full overflow-hidden">
-              <div className="bg-unbox-green h-full w-[25%]" />
+              <div 
+                className="bg-unbox-green h-full transition-all duration-1000" 
+                style={{ width: `${Math.min(100, (Number(gasK) / 50) * 100)}%` }} 
+              />
             </div>
           </div>
         </div>

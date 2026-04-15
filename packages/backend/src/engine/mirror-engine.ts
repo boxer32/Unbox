@@ -68,12 +68,16 @@ export class MirrorEngine {
         );
 
         // 2. If it passes verification, enqueue the real handshake for logs/metrics
-        const handshakeJobId = await this.blockchain.requestHandshake(
-          context.structuredIntent.agentTokenId,
-          optimized.payloadHash,
-          riskCount
-        );
-        console.log(`[MirrorEngine] Handshake verified and enqueued: ${handshakeJobId}`);
+        try {
+          const handshakeJobId = await this.blockchain.requestHandshake(
+            context.structuredIntent.agentTokenId,
+            optimized.payloadHash,
+            riskCount
+          );
+          console.log(`[MirrorEngine] Handshake verified and enqueued: ${handshakeJobId}`);
+        } catch (requestError: any) {
+          console.warn(`[MirrorEngine] Handshake logging failed (Non-critical): ${requestError.message}`);
+        }
       } catch (handshakeError: any) {
         console.warn(`[MirrorEngine] Handshake REJECTED by Guardrail: ${handshakeError.message}`);
         // For hackathon, we still record the attempt but mark as blocked by guardrail
@@ -93,24 +97,36 @@ export class MirrorEngine {
 
     // 5. Persist Full Off-chain Record (REQ-MIRROR-002)
     // Now includes explanation and replays
-    await this.store.save(payload);
+    try {
+      await this.store.save(payload);
+    } catch (saveError: any) {
+      console.error(`[MirrorEngine] Storage error: ${saveError.message}`);
+    }
 
     // 5. Anchor Hash On-chain (REQ-MIRROR-002, S5-T04)
-    await this.blockchain.enqueue('ANCHOR_DECISION', [
-      payload.decisionId,
-      payload.agentId,
-      payload.payloadHash,
-      payload.action
-    ]);
+    try {
+      await this.blockchain.enqueue('ANCHOR_DECISION', [
+        payload.decisionId,
+        payload.agentId,
+        payload.payloadHash,
+        payload.action
+      ]);
+    } catch (anchorError: any) {
+      console.warn(`[MirrorEngine] On-chain anchoring failed (Network/Gas): ${anchorError.message}`);
+    }
 
     // Sprint 3: Reputation Updates (REQ-REP-003)
-    const newScores = await this.reputation.evaluateDecision(payload);
-    await this.reputation.pushScoreUpdate(this.agentTokenId, newScores.q, newScores.s, newScores.e, newScores.t);
-
-    console.log(`[MirrorEngine] Decision persisted with ${replays.length} replays and score updated.`);
-
-    // 6. Emit event (REQ-MIRROR-005)
-    this.emitLocalEvent('DecisionCaptured', { ...payload, explanation, replays, newScores });
+    try {
+      const newScores = await this.reputation.evaluateDecision(payload);
+      await this.reputation.pushScoreUpdate(this.agentTokenId, newScores.q, newScores.s, newScores.e, newScores.t);
+      console.log(`[MirrorEngine] Decision persisted and score updated.`);
+      
+      // 6. Emit event (REQ-MIRROR-005)
+      this.emitLocalEvent('DecisionCaptured', { ...payload, explanation, replays, newScores });
+    } catch (repError: any) {
+      console.warn(`[MirrorEngine] Reputation update failed (Network/Gas): ${repError.message}`);
+      this.emitLocalEvent('DecisionCaptured', { ...payload, explanation, replays, newScores: {q:0, s:0, e:0, t:0} });
+    }
 
     // 7. Update memory cache for NFR-005: Last 20 decisions
     this.recentDecisions.push(payload);

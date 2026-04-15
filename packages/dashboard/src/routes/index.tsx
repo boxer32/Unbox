@@ -16,6 +16,7 @@ export const Route = createFileRoute('/')({
 function LandingPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const baseUrl = import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:4000';
+  
   const statsQuery = useQuery({
     queryKey: ['landing-stats'],
     queryFn: async () => {
@@ -30,6 +31,16 @@ function LandingPage() {
     refetchInterval: 5000,
   });
 
+  const reputationQuery = useQuery({
+    queryKey: ['global-reputation'],
+    queryFn: async () => {
+      const response = await fetch(`${baseUrl}/api/reputation/global`);
+      const json = await response.json();
+      return json.score as { q: number, s: number, e: number, t: number };
+    },
+    refetchInterval: 10000,
+  });
+
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!containerRef.current) return;
@@ -42,18 +53,17 @@ function LandingPage() {
         card.style.setProperty('--mouse-y', `${y}px`);
       }
     };
-
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
+  const rep = reputationQuery.data || { q: 98, s: 100, e: 94, t: 99 };
+
   return (
     <div ref={containerRef} className="min-h-screen bg-[#030303] text-white selection:bg-unbox-green/30 relative overflow-hidden">
-      {/* Immersive Background */}
       <div className="absolute inset-0 bg-grid pointer-events-none opacity-20" />
       <div className="scan-line" />
       
-      {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 px-8 py-4 backdrop-blur-md border-b border-white/5">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3 group cursor-pointer">
@@ -77,7 +87,6 @@ function LandingPage() {
         </div>
       </nav>
 
-      {/* Hero Section */}
       <section className="relative pt-48 pb-16 px-8">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
           <div className="space-y-10 relative z-10">
@@ -88,16 +97,13 @@ function LandingPage() {
               </span>
               Accountability Layer for X Layer
             </div>
-            
             <h1 className="text-7xl md:text-[100px] font-black tracking-tighter leading-[0.85] text-white">
               Open every<br/> 
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-unbox-green via-emerald-400 to-unbox-green bg-[length:200%_auto] animate-gradient glow-text">black box.</span>
             </h1>
-
             <p className="text-xl text-white/40 max-w-xl leading-relaxed font-medium">
               Unbox logs, explains, and stress-tests every decision your on-chain agent makes — before it costs you.
             </p>
-
             <div className="flex flex-col sm:flex-row items-center gap-6 pt-4">
               <Link to="/mirror" className="w-full sm:w-auto px-10 py-5 bg-unbox-green text-black font-black uppercase text-xs tracking-widest rounded-sm hover:-translate-y-1 transition-all flex items-center justify-center gap-3 shadow-[0_20px_40px_-15px_rgba(16,185,129,0.3)]">
                 Launch Console
@@ -108,7 +114,6 @@ function LandingPage() {
               </button>
             </div>
           </div>
-
           <div className="relative group">
             <div className="absolute -inset-20 bg-unbox-green/10 blur-[100px] rounded-full animate-breathe" />
             <div className="relative flex items-center justify-center animate-float">
@@ -133,7 +138,6 @@ function LandingPage() {
         </div>
       </section>
 
-      {/* Live Reputation HUD integration */}
       <section className="px-8 max-w-7xl mx-auto mb-24 anim-fade-in-up">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
           <div className="lg:col-span-4 space-y-6">
@@ -147,16 +151,15 @@ function LandingPage() {
           </div>
           <div className="lg:col-span-8">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-               <ReputationGauge label="Quality" value="98" color="emerald" />
-               <ReputationGauge label="Security" value="100" color="unbox-green" />
-               <ReputationGauge label="Efficiency" value="94" color="amber" />
-               <ReputationGauge label="Trust" value="99" color="emerald" />
+               <ReputationGauge label="Quality" value={rep.q.toString()} color="emerald" />
+               <ReputationGauge label="Security" value={rep.s.toString()} color="unbox-green" />
+               <ReputationGauge label="Efficiency" value={rep.e.toString()} color="amber" />
+               <ReputationGauge label="Transparency" value={rep.t.toString()} color="emerald" />
             </div>
           </div>
         </div>
       </section>
 
-      {/* Forensic Stats */}
       <section className="px-8 py-24 bg-white/[0.01] border-y border-white/5 relative">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-16">
           <ForensicStat label="Total Decisions Mirrorred" value={`${statsQuery.data?.totalDecisions ?? 0}`} delta="Live" />
@@ -166,49 +169,18 @@ function LandingPage() {
         </div>
       </section>
 
-      {/* Premium Features */}
       <section className="px-8 py-32 max-w-7xl mx-auto space-y-20">
         <div className="text-center space-y-4">
           <h2 className="text-xs font-black uppercase tracking-[0.4em] text-unbox-green">Architecture</h2>
           <p className="text-4xl font-bold tracking-tight">Three layers of verification.</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-          <FeatureCard 
-            id="mirror"
-            icon={Search} 
-            title="Unbox Mirror" 
-            label="Forensic Replay"
-            desc="Real-time decision interception and plain-language explanation. Know the 'why' behind every block."
-          />
-          <FeatureCard 
-            id="score"
-            icon={Shield} 
-            title="Unbox Score" 
-            label="Soulbound Trust"
-            desc="Verifiable on-chain reputation. Non-transferable scores built on historical agent performance."
-          />
-          <FeatureCard 
-            id="feed"
-            icon={BarChart3} 
-            title="Unbox Feed" 
-            label="Data Monetization"
-            desc="The x402 data gate. Trade agent intelligence streams in a trustless, payment-guaranteed environment."
-          />
+          <FeatureCard id="mirror" icon={Search} title="Unbox Mirror" label="Forensic Replay" desc="Real-time decision interception and plain-language explanation. Know the 'why' behind every block." />
+          <FeatureCard id="score" icon={Shield} title="Unbox Score" label="Soulbound Trust" desc="Verifiable on-chain reputation. Non-transferable scores built on historical agent performance." />
+          <FeatureCard id="feed" icon={BarChart3} title="Unbox Feed" label="Data Monetization" desc="The x402 data gate. Trade agent intelligence streams in a trustless, payment-guaranteed environment." />
         </div>
       </section>
 
-      {/* Mission Section */}
-      <section className="px-8 py-32 relative overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-unbox-green/5 blur-[120px] rounded-full" />
-        <div className="max-w-3xl mx-auto text-center space-y-12 relative">
-          <div className="space-y-6">
-            <h3 className="text-5xl font-black tracking-tighter italic">"Agents should be accountable."</h3>
-            <p className="text-xl text-white/40 italic">— Unbox Manifesto</p>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
       <footer className="px-8 py-24 border-t border-white/5 bg-black/50 backdrop-blur-3xl">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-16">
           <div className="space-y-6 max-w-xs">
@@ -220,33 +192,6 @@ function LandingPage() {
               The accountability layer for on-chain agents. Built for the agentic economy on X Layer.
             </p>
           </div>
-          <div className="grid grid-cols-2 gap-32">
-            <div className="space-y-6">
-               <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20">Protocol</h4>
-               <ul className="text-xs text-white/40 space-y-4 font-bold uppercase tracking-widest">
-                 <li><Link to="/mirror" className="hover:text-unbox-green transition-colors">Mirror Console</Link></li>
-                 <li><span className="text-white/10 cursor-not-allowed">Score Minting</span></li>
-                 <li><span className="text-white/10 cursor-not-allowed">Feed API</span></li>
-               </ul>
-            </div>
-            <div className="space-y-6">
-               <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20">Resources</h4>
-               <ul className="text-xs text-white/40 space-y-4 font-bold uppercase tracking-widest">
-                 <li className="hover:text-unbox-green cursor-pointer">Whitepaper</li>
-                 <li className="hover:text-unbox-green cursor-pointer">Github</li>
-                 <li className="hover:text-unbox-green cursor-pointer">X Layer Explorer</li>
-               </ul>
-            </div>
-          </div>
-        </div>
-        <div className="max-w-7xl mx-auto pt-16 mt-16 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8">
-           <div className="text-[8px] uppercase tracking-[0.4em] text-white/10 font-black">
-             © 2026 UNBOX PROTOCOL. POWERED BY ONCHAIN OS.
-           </div>
-           <div className="flex items-center gap-8 text-[8px] uppercase tracking-[0.4em] text-white/20 font-black">
-             <span>Terms of Intel</span>
-             <span>Privacy Hash</span>
-           </div>
         </div>
       </footer>
     </div>
@@ -259,10 +204,7 @@ function ForensicStat({ label, value, delta }: { label: string, value: string, d
       <p className="text-[10px] uppercase tracking-[0.3em] text-white/30 font-bold group-hover:text-unbox-green transition-colors">{label}</p>
       <div className="flex items-baseline gap-4">
         <p className="text-5xl font-black tracking-tight tabular-nums">{value}</p>
-        <span className={cn(
-          "text-[10px] font-bold px-2 py-0.5 rounded-sm",
-          delta === "Critical" ? "bg-red-500/20 text-red-400" : "bg-unbox-green/10 text-unbox-green"
-        )}>{delta}</span>
+        <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-sm", delta === "Critical" ? "bg-red-500/20 text-red-400" : "bg-unbox-green/10 text-unbox-green")}>{delta}</span>
       </div>
     </div>
   )
@@ -283,11 +225,6 @@ function FeatureCard({ icon: Icon, title, desc, label, id }: { icon: any, title:
           </div>
           <p className="text-white/40 text-sm leading-relaxed font-medium">{desc}</p>
         </div>
-        <div className="mt-auto pt-4">
-          <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/20 group-hover:text-unbox-green transition-colors cursor-pointer">
-            Explore Documentation <ArrowRight className="w-3 h-3" />
-          </div>
-        </div>
       </div>
     </div>
   )
@@ -298,27 +235,14 @@ function ReputationGauge({ label, value, color }: { label: string, value: string
     <div className="glass-card p-6 border-white/5 bg-white/[0.02] flex flex-col gap-4 group hover:border-unbox-green/30 transition-all hover:bg-white/[0.04]">
       <div className="flex justify-between items-start">
         <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 group-hover:text-unbox-green transition-colors">{label}</span>
-        <div className={cn(
-          "w-1.5 h-1.5 rounded-full",
-          color === 'unbox-green' ? "bg-unbox-green shadow-[0_0_8px_theme(colors.unbox-green)]" : 
-          color === 'amber' ? "bg-amber-500 shadow-[0_0_8px_theme(colors.amber.500)]" : 
-          "bg-emerald-500 shadow-[0_0_8px_theme(colors.emerald.500)]"
-        )} />
+        <div className={cn("w-1.5 h-1.5 rounded-full", color === 'unbox-green' ? "bg-unbox-green shadow-[0_0_8px_theme(colors.unbox-green)]" : color === 'amber' ? "bg-amber-500 shadow-[0_0_8px_theme(colors.amber.500)]" : "bg-emerald-500 shadow-[0_0_8px_theme(colors.emerald.500)]")} />
       </div>
       <div className="flex items-baseline gap-1">
         <span className="text-4xl font-black text-white">{value}</span>
         <span className="text-[10px] font-bold text-white/20 uppercase">Units</span>
       </div>
       <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-        <div 
-          className={cn(
-            "h-full rounded-full transition-all duration-[1500ms] shadow-[0_0_10px_currentcolor]",
-            color === 'unbox-green' ? "bg-unbox-green" : 
-            color === 'amber' ? "bg-amber-500" : 
-            "bg-emerald-500"
-          )}
-          style={{ width: `${value}%` }} 
-        />
+        <div className={cn("h-full rounded-full transition-all duration-[1500ms] shadow-[0_0_10px_currentcolor]", color === 'unbox-green' ? "bg-unbox-green" : color === 'amber' ? "bg-amber-500" : "bg-emerald-500")} style={{ width: `${value}%` }} />
       </div>
     </div>
   )

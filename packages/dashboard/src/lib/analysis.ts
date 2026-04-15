@@ -124,7 +124,10 @@ export function buildCausalChain(decision: DecisionPayload): CausalStep[] {
       status: 'neutral',
       title: 'Intent formation',
       data: {
-        goal: decision.intentText.toLowerCase().includes('swap') ? 'Asset Swap' : 'Liquidity Mgmt',
+        goal: decision.intentText.toUpperCase().includes('ARBITRAGE') ? 'Arbitrage Attack' : 
+              decision.intentText.toUpperCase().includes('LAUNCH') ? 'Token Launch' :
+              decision.intentText.toUpperCase().includes('VOTE') ? 'Governance Force' :
+              decision.intentText.toLowerCase().includes('swap') ? 'Asset Swap' : 'Liquidity Mgmt',
         intent: decision.intentText.length > 20 ? decision.intentText.slice(0, 17) + '...' : decision.intentText,
         token: (decision as any).structuredIntent?.tokenOut?.slice(0, 10) || 'N/A',
       },
@@ -147,9 +150,9 @@ export function buildCausalChain(decision: DecisionPayload): CausalStep[] {
       title: 'Strategy Optimized',
       reqId: 'NFR-003',
       data: {
-        'gas limit': (decision as any).optimization.optimizedPayload.recommendedGasLimit || 'Auto',
-        'max fee': (decision as any).optimization.optimizedPayload.recommendedMaxFeePerGas || 'Auto',
-        route: (decision as any).optimization.optimizedPayload.targetRoute?.split('_').pop() || 'Canonical',
+        'gas limit': (decision as any).optimization?.optimizedPayload?.recommendedGasLimit || 'Auto',
+        'max fee': (decision as any).optimization?.optimizedPayload?.recommendedMaxFeePerGas || 'Auto',
+        route: (decision as any).optimization?.targetRoute?.split('_').pop() || (decision as any).optimization?.optimizedPayload?.targetRoute?.split('_').pop() || 'Canonical',
       },
     }] : []),
     {
