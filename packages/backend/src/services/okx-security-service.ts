@@ -24,8 +24,8 @@ export class OKXSecurityService {
     try {
       console.log(`[OKXSecurity] Scanning token ${tokenAddress} on ${chain}...`);
       
-      // Execute Onchain OS CLI command
-      const { stdout } = await execAsync(`${this.binaryPath} security token-scan ${tokenAddress} --chain ${chain}`);
+      // Execute Onchain OS CLI command (using X Layer chain index 196)
+      const { stdout } = await execAsync(`${this.binaryPath} security token-scan --tokens 196:${tokenAddress}`);
       const result = JSON.parse(stdout);
 
       if (!result.ok) {

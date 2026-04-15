@@ -24,9 +24,9 @@ export class OKXTradeService {
   static readonly X_LAYER_CHAIN_INDEX = '196';
 
   constructor(env: Record<string, string | undefined>) {
-    this.apiKey = env.OKX_API_KEY || '';
-    this.secretKey = env.OKX_SECRET_KEY || '';
-    this.passphrase = env.OKX_PASSPHRASE || '';
+    this.apiKey = env.OKX_API_KEY || env.OK_API_KEY || '';
+    this.secretKey = env.OKX_SECRET_KEY || env.OK_SECRET_KEY || '';
+    this.passphrase = env.OKX_PASSPHRASE || env.OK_PASSPHRASE || '';
   }
 
   private createSignature(timestamp: string, method: string, requestPath: string): string {
