@@ -1,5 +1,5 @@
 import { OnchainOSIntent } from './types.js';
-import crypto from 'crypto';
+import crypto from 'node:crypto';
 
 /**
  * OKX Onchain OS Trade Service Integration

@@ -212,7 +212,7 @@ function DecisionDetailPage() {
             {decision.optimization && (
               <OptimizationPanel 
                 optimization={decision.optimization} 
-                handshakeStatus={decision.explanation?.includes('BLOCKED_BY_ONCHAIN_GUARDRAIL') ? 'blocked' : 'approved'}
+                handshakeStatus={decision.action === 'block' ? 'blocked' : 'approved'}
               />
             )}
 

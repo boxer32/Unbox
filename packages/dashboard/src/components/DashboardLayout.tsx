@@ -1,6 +1,5 @@
 import { Link } from '@tanstack/react-router';
-import { Activity, Shield, LayoutDashboard, Database, Wallet, CheckCircle, Info, HelpCircle } from 'lucide-react';
-import { Show, SignInButton, UserButton } from '@clerk/react';
+import { Activity, Shield, LayoutDashboard, BarChart3, Wallet, CheckCircle, Info, HelpCircle } from 'lucide-react';
 import { WalletConnect } from './WalletConnect.js';
 
 export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -29,30 +28,12 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ child
             X Layer Testnet Live
           </div>
 
-          <div className="w-px h-6 bg-white/10" />
-
-          <Show when="signed-out">
-            <SignInButton mode="modal">
-              <button className="flex items-center gap-2 px-6 py-2 bg-unbox-green text-black font-black text-[10px] uppercase tracking-widest rounded-lg hover:scale-105 transition-transform shadow-[0_0_20px_rgba(16,185,129,0.2)]">
-                Sign In to Unbox
-              </button>
-            </SignInButton>
-          </Show>
-
-          <Show when="signed-in">
-            <div className="flex items-center gap-6">
-              <WalletConnect />
-              <div className="w-px h-6 bg-white/5" />
-              <UserButton 
-                appearance={{
-                  elements: {
-                    userButtonAvatarBox: "w-8 h-8 rounded-lg border border-unbox-green/30",
-                    userButtonTrigger: "focus:shadow-none hover:scale-105 transition-transform"
-                  }
-                }}
-              />
+          <div className="flex items-center gap-6">
+            <WalletConnect />
+            <div className="w-px h-6 bg-white/10" />
+            <div className="w-8 h-8 rounded-lg bg-unbox-green/10 border border-unbox-green/30 flex items-center justify-center">
             </div>
-          </Show>
+          </div>
 
           <button className="p-2 text-white/20 hover:text-unbox-green transition-colors">
             <HelpCircle className="w-5 h-5" />

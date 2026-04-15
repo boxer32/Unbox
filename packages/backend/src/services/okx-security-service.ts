@@ -1,8 +1,3 @@
-import { exec } from 'child_process';
-import { promisify } from 'util';
-
-const execAsync = promisify(exec);
-
 export interface TokenSecurityResult {
   level: number;
   riskLabels: string[];
@@ -10,43 +5,53 @@ export interface TokenSecurityResult {
 }
 
 /**
- * OKX Security Service Integration
- * Uses Onchain OS CLI to perform deep token risk scanning (Honeypot, Rugpull, etc.)
+ * OKX Security Service Integration (REST API version)
+ * Directly calls the OKX Security endpoints via fetch.
+ * Compatible with Cloudflare Workers.
  */
 export class OKXSecurityService {
-  private readonly binaryPath = '/Users/test/.local/bin/onchainos';
+  private readonly baseUrl = 'https://web3.okx.com';
 
   /**
-   * Scans a token for risks across supported chains.
-   * Leverages the 4-level risk model from OKX Onchain OS.
+   * Scans a token for risks using OKX DEX Security API.
+   * X Layer Chain Index: 196
    */
-  public async scanToken(tokenAddress: string, chain: string = 'xlayer'): Promise<TokenSecurityResult> {
+  public async scanToken(tokenAddress: string, chain: string = '196'): Promise<TokenSecurityResult> {
     try {
-      console.log(`[OKXSecurity] Scanning token ${tokenAddress} on ${chain}...`);
+      console.log(`[OKXSecurity] Performing REST API scan for ${tokenAddress} on chain ${chain}...`);
       
-      // Execute Onchain OS CLI command (using X Layer chain index 196)
-      const { stdout } = await execAsync(`${this.binaryPath} security token-scan --tokens 196:${tokenAddress}`);
-      const result = JSON.parse(stdout);
-
-      if (!result.ok) {
-        throw new Error(result.msg || 'Unknown security scan error');
+      const url = `${this.baseUrl}/api/v6/dex/security/token-scan?chainId=${chain}&contractAddress=${tokenAddress}`;
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error(`OKX Security API returned status ${response.status}`);
       }
 
-      // Map OKX risk model to Unbox format
-      const level = result.data.level || 1;
+      const result: any = await response.json();
+
+      if (result.code !== "0" || !result.data || result.data.length === 0) {
+        throw new Error(result.msg || 'Security API returned no data');
+      }
+
+      // OKX Security API returns an array of results
+      const data = result.data[0];
+      const level = parseInt(data.level) || 1;
+      
       let action: 'block' | 'warn' | 'safe' = 'safe';
       
+      // Level 4: Critical (Honeypot, etc.) -> Block
       if (level >= 4) action = 'block';
+      // Level 2-3: Medium/High Risk -> Warn
       else if (level >= 2) action = 'warn';
 
       return {
         level,
-        riskLabels: result.data.labels || [],
+        riskLabels: data.labels || [],
         action
       };
     } catch (error) {
-      console.error('[OKXSecurity] Scan Failed:', error);
-      // Fail-safe: proceed with warning if security infra is down
+      console.error('[OKXSecurity] REST API Scan Failed:', error);
+      // Fail-safe: warning if security infra is unreachable
       return { level: 1, riskLabels: ['SCAN_UNAVAILABLE'], action: 'safe' };
     }
   }
