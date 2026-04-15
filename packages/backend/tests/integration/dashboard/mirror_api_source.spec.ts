@@ -6,7 +6,7 @@ describe('Mirror dashboard data source guard (TC-UX-001)', () => {
   it('should use API queries and not local mockData in mirror route', async () => {
     const mirrorRoutePath = path.resolve(
       process.cwd(),
-      '../dashboard/src/routes/mirror.lazy.tsx',
+      './packages/dashboard/src/routes/mirror.tsx',
     );
     const source = await fs.readFile(mirrorRoutePath, 'utf-8');
 
