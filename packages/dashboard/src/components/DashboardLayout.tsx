@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router';
-import { Activity, Shield, LayoutDashboard, BarChart3, Wallet, CheckCircle, Info, HelpCircle } from 'lucide-react';
+import { Activity, Shield, LayoutDashboard, BarChart3, Wallet, CheckCircle, Info, HelpCircle, Search, Award } from 'lucide-react';
 import { WalletConnect } from './WalletConnect.js';
 
 export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -16,8 +16,8 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ child
             </div>
           </Link>
           <nav className="hidden lg:flex items-center gap-2 p-1 bg-white/[0.03] rounded-xl border border-white/5">
-            <NavItem to="/mirror" icon={LayoutDashboard} label="Mirror" />
-            <NavItem to="/" icon={Shield} label="Score" />
+            <NavItem to="/mirror" icon={Search} label="Mirror" />
+            <NavItem to="/score" icon={Award} label="Score" />
             <NavItem to="/feed" icon={Activity} label="Feed" />
           </nav>
         </div>

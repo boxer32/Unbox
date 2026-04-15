@@ -9,11 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ScoreRouteImport } from './routes/score'
 import { Route as MirrorRouteImport } from './routes/mirror'
 import { Route as FeedRouteImport } from './routes/feed'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DecisionsDecisionIdRouteImport } from './routes/decisions.$decisionId'
 
+const ScoreRoute = ScoreRouteImport.update({
+  id: '/score',
+  path: '/score',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MirrorRoute = MirrorRouteImport.update({
   id: '/mirror',
   path: '/mirror',
@@ -39,12 +45,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/feed': typeof FeedRoute
   '/mirror': typeof MirrorRoute
+  '/score': typeof ScoreRoute
   '/decisions/$decisionId': typeof DecisionsDecisionIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/feed': typeof FeedRoute
   '/mirror': typeof MirrorRoute
+  '/score': typeof ScoreRoute
   '/decisions/$decisionId': typeof DecisionsDecisionIdRoute
 }
 export interface FileRoutesById {
@@ -52,25 +60,40 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/feed': typeof FeedRoute
   '/mirror': typeof MirrorRoute
+  '/score': typeof ScoreRoute
   '/decisions/$decisionId': typeof DecisionsDecisionIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/feed' | '/mirror' | '/decisions/$decisionId'
+  fullPaths: '/' | '/feed' | '/mirror' | '/score' | '/decisions/$decisionId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/feed' | '/mirror' | '/decisions/$decisionId'
-  id: '__root__' | '/' | '/feed' | '/mirror' | '/decisions/$decisionId'
+  to: '/' | '/feed' | '/mirror' | '/score' | '/decisions/$decisionId'
+  id:
+    | '__root__'
+    | '/'
+    | '/feed'
+    | '/mirror'
+    | '/score'
+    | '/decisions/$decisionId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   FeedRoute: typeof FeedRoute
   MirrorRoute: typeof MirrorRoute
+  ScoreRoute: typeof ScoreRoute
   DecisionsDecisionIdRoute: typeof DecisionsDecisionIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/score': {
+      id: '/score'
+      path: '/score'
+      fullPath: '/score'
+      preLoaderRoute: typeof ScoreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/mirror': {
       id: '/mirror'
       path: '/mirror'
@@ -106,6 +129,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   FeedRoute: FeedRoute,
   MirrorRoute: MirrorRoute,
+  ScoreRoute: ScoreRoute,
   DecisionsDecisionIdRoute: DecisionsDecisionIdRoute,
 }
 export const routeTree = rootRouteImport
