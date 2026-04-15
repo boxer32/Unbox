@@ -17,6 +17,7 @@ import { ReputationService } from './services/reputation-service.js';
 import { BlockchainService } from './services/blockchain-service.js';
 import { AxBayesianOptimizer } from './skills/ax-optimizer.js';
 import { OKXTradeService } from './skills/okx-trade-service.js';
+import { OKXSecurityService } from './services/okx-security-service.js';
 
 type Bindings = {
   DB: D1Database;
@@ -52,15 +53,15 @@ app.use('*', async (c, next) => {
   
   const explainer = new ExplanationWorker(c.env.OPENROUTER_API_KEY, c.env.OPENROUTER_MODEL);
   
+  const okxTrade = new OKXTradeService(c.env as unknown as Record<string, string | undefined>);
+  const okxSecurity = new OKXSecurityService();
+  const optimizer = new AxBayesianOptimizer(okxTrade);
+  
   const gateway = new X402Gateway(c.env.TREASURY_ADDRESS);
   const blockchain = new BlockchainService(c.env as unknown as Record<string, string | undefined>);
   const reputation = new ReputationService(blockchain);
-  const adapter = new AgentAdapter();
+  const adapter = new AgentAdapter(okxSecurity);
   const counterfactual = new CounterfactualEngine();
-  
-  // V1.5 Integration: OKX Onchain OS
-  const okxTrade = new OKXTradeService(c.env as unknown as Record<string, string | undefined>);
-  const optimizer = new AxBayesianOptimizer(okxTrade);
 
   // Wire them up
   await gateway.setProofStore(proofStore as any); // Type cast until we update X402Gateway signature

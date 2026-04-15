@@ -12,6 +12,8 @@ import { ThirdwebIntent } from '../skills/types.js';
  * Intercepts agent intent and normalizes it into a canonical Mirror record.
  */
 
+import { OKXSecurityService } from '../services/okx-security-service.js';
+
 export interface IntentContext {
   agentId: string;
   intentText: string;
@@ -30,6 +32,8 @@ export interface IntentContext {
 }
 
 export class AgentAdapter {
+  constructor(private readonly securityService?: OKXSecurityService) {}
+
   /**
    * Intercepts a decision intent and converts it to a validated DecisionPayload.
    * This is the entry point for REQ-MIRROR-001.
@@ -48,13 +52,23 @@ export class AgentAdapter {
       targetAddress = addrMatch ? addrMatch[0] : undefined;
     }
 
+    // V1.5 Innovative Integration: Trigger real-time OKX Security Scan
+    let securityScan = context.securityScan;
+    if (this.securityService && targetAddress) {
+      const liveScan = await this.securityService.scanToken(targetAddress);
+      securityScan = {
+        score: Math.max(0, 100 - (liveScan.level * 20)),
+        flags: liveScan.riskLabels
+      };
+    }
+
     const payload: Partial<DecisionPayload> = {
       decisionId,
       agentId: context.agentId,
       action,
       intentText: context.intentText,
       marketState: context.marketState,
-      securityScan: context.securityScan,
+      securityScan,
       blockRef: context.blockRef,
       timestampMs,
       targetAddress

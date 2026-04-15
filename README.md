@@ -98,9 +98,9 @@ Unbox utilizes the **OKX Agentic Wallet** as its primary on-chain identity.
 - **Address**: `0xe7b7a872e04ea2ffee43785187a4663887e5c27a` (Linked to TEE-protected Agentic Wallet Instance)
 
 ### 3. Onchain OS Skill Integration
-Unbox integrates the **OKX Onchain OS Trade Module** (DEX Aggregator):
-- **Usage**: The `AxBayesianOptimizer` uses the OKX DEX Aggregator API to fetch real-time quotes and liquidity paths.
-- **Purpose**: This data drives the **Counterfactual Engine**, providing authentic "Better Path" analysis versus the agent's original intent.
+Unbox demonstrates deep integration with **OKX Onchain OS** core modules:
+- **Trade Module (DEX Aggregator)**: The `AxBayesianOptimizer` fetches real-time quotes to provide authentic counterfactual "Better Path" analysis.
+- **Security Module (Token Scan)**: **[INNOVATIVE]** Every intercepted agent intent triggers a real-time security audit using OKX's 4-level risk model. This detects Honeypots and Rugpulls before they hit the chain, providing a unique "Forensic Guardrail" for the X Layer ecosystem.
 
 ---
 
@@ -108,9 +108,10 @@ Unbox integrates the **OKX Onchain OS Trade Module** (DEX Aggregator):
 
 Unbox operates as a middleware layer between an AI Agent and the blockchain:
 1. **Intercept**: Captures Intent from the Agentic Wallet.
-2. **Optimize**: Uses OKX Onchain OS to find the best execution path.
-3. **Forensics**: Generates AI-powered narratives and counterfactual replays.
-4. **Anchor**: Logs the decision hash and updates reputation on X Layer.
+2. **Audit**: Perfroms real-time **OKX Security Scan** to assess asset risk.
+3. **Optimize**: Uses **OKX DEX Aggregator** to find the optimal execution path.
+4. **Forensics**: Generates AI-powered narratives and counterfactual replays.
+5. **Anchor**: Logs the decision hash and updates reputation on **X Layer**.
 
 ---
 
