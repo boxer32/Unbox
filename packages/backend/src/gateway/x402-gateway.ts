@@ -11,14 +11,25 @@ export interface PaymentSpec {
   expiryMs: number;
 }
 
-import { FileProofStore } from '../store/proof-store';
+import { IProofStore } from '../store/proof-store.js';
+import { BlockchainService } from '../services/blockchain-service.js';
 
 export class X402Gateway {
-  private proofStore: FileProofStore | null = null;
+  private proofStore: IProofStore | null = null;
+  private blockchainService: BlockchainService | null = null;
   private consumedProofs = new Set<string>();
+  private treasuryAddress: string;
 
-  public async setProofStore(store: FileProofStore) {
+  constructor(treasuryAddress?: string) {
+    this.treasuryAddress = treasuryAddress || '0xab16A69A5a8c12C732e0DEFF4BE56A70bb64c926';
+  }
+
+  public async setProofStore(store: IProofStore) {
     this.proofStore = store;
+  }
+
+  public async setBlockchainService(service: BlockchainService) {
+    this.blockchainService = service;
   }
 
   /**
@@ -60,10 +71,14 @@ export class X402Gateway {
    * Logic to check on-chain transaction or signed message.
    */
   public async verifyPayment(proof: string): Promise<boolean> {
-    // Logic to verify transaction hash or signature
-    // For V1, we simulate verification of a mock string
-    console.log(`[X402Gateway] Verifying payment proof: ${proof}`);
-    return proof.length > 32; // Simplified check
+    // REQ-FEED-002: Real on-chain verification
+    if (!this.blockchainService) {
+      console.warn('[X402Gateway] Blockchain service not ready, falling back to mock check');
+      return proof.length > 32;
+    }
+
+    console.log(`[X402Gateway] Verifying live payment proof on-chain: ${proof}`);
+    return await this.blockchainService.verifyTransaction(proof, this.treasuryAddress, '0.001');
   }
 
   /**

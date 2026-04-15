@@ -8,20 +8,17 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { createFileRoute } from '@tanstack/react-router'
-
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as MirrorRouteImport } from './routes/mirror'
 import { Route as FeedRouteImport } from './routes/feed'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DecisionsDecisionIdRouteImport } from './routes/decisions.$decisionId'
 
-const MirrorLazyRouteImport = createFileRoute('/mirror')()
-
-const MirrorLazyRoute = MirrorLazyRouteImport.update({
+const MirrorRoute = MirrorRouteImport.update({
   id: '/mirror',
   path: '/mirror',
   getParentRoute: () => rootRouteImport,
-} as any).lazy(() => import('./routes/mirror.lazy').then((d) => d.Route))
+} as any)
 const FeedRoute = FeedRouteImport.update({
   id: '/feed',
   path: '/feed',
@@ -41,20 +38,20 @@ const DecisionsDecisionIdRoute = DecisionsDecisionIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/feed': typeof FeedRoute
-  '/mirror': typeof MirrorLazyRoute
+  '/mirror': typeof MirrorRoute
   '/decisions/$decisionId': typeof DecisionsDecisionIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/feed': typeof FeedRoute
-  '/mirror': typeof MirrorLazyRoute
+  '/mirror': typeof MirrorRoute
   '/decisions/$decisionId': typeof DecisionsDecisionIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/feed': typeof FeedRoute
-  '/mirror': typeof MirrorLazyRoute
+  '/mirror': typeof MirrorRoute
   '/decisions/$decisionId': typeof DecisionsDecisionIdRoute
 }
 export interface FileRouteTypes {
@@ -68,7 +65,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   FeedRoute: typeof FeedRoute
-  MirrorLazyRoute: typeof MirrorLazyRoute
+  MirrorRoute: typeof MirrorRoute
   DecisionsDecisionIdRoute: typeof DecisionsDecisionIdRoute
 }
 
@@ -78,7 +75,7 @@ declare module '@tanstack/react-router' {
       id: '/mirror'
       path: '/mirror'
       fullPath: '/mirror'
-      preLoaderRoute: typeof MirrorLazyRouteImport
+      preLoaderRoute: typeof MirrorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/feed': {
@@ -108,7 +105,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   FeedRoute: FeedRoute,
-  MirrorLazyRoute: MirrorLazyRoute,
+  MirrorRoute: MirrorRoute,
   DecisionsDecisionIdRoute: DecisionsDecisionIdRoute,
 }
 export const routeTree = rootRouteImport

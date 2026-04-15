@@ -1,18 +1,15 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { MirrorEngine } from '../mirror-engine';
-import { AgentAdapter, IntentContext } from '../../adapter/agent-adapter';
-import { FileDecisionStore } from '../../store/decision-store';
-import { ExplanationWorker } from '../../workers/explanation-worker';
-import { CounterfactualEngine } from '../counterfactual-engine';
-import { ReputationService } from '../../services/reputation-service';
-import { BlockchainService } from '../../services/blockchain-service';
-import fs from 'fs/promises';
-import path from 'path';
+import { MirrorEngine } from '../mirror-engine.js';
+import { AgentAdapter, IntentContext } from '../../adapter/agent-adapter.js';
+import { InMemoryDecisionStore } from '../../store/memory-store.js';
+import { ExplanationWorker } from '../../workers/explanation-worker.js';
+import { CounterfactualEngine } from '../counterfactual-engine.js';
+import { ReputationService } from '../../services/reputation-service.js';
+import { BlockchainService } from '../../services/blockchain-service.js';
+import { AxBayesianOptimizer } from '../../skills/ax-optimizer.js';
 
 describe('MirrorEngine Integration', () => {
-  const testStorageDir = 'data/test_decisions';
   const adapter = new AgentAdapter();
-  const store = new FileDecisionStore(testStorageDir);
   const explainer = new ExplanationWorker();
   const counterfactual = new CounterfactualEngine();
   const mockBlockchain = {
@@ -20,7 +17,10 @@ describe('MirrorEngine Integration', () => {
     getAgentScore: async () => ({ q: 90, s: 90, e: 90, t: 95 }),
   } as unknown as BlockchainService;
   const reputation = new ReputationService(mockBlockchain);
-  const engine = new MirrorEngine(adapter, store, explainer, counterfactual, reputation, mockBlockchain);
+  const optimizer = new AxBayesianOptimizer();
+  
+  let store: InMemoryDecisionStore;
+  let engine: MirrorEngine;
 
   const mockContext: IntentContext = {
     agentId: 'agent-456',
@@ -39,9 +39,8 @@ describe('MirrorEngine Integration', () => {
   };
 
   beforeEach(async () => {
-    // Clean up test directory
-    const fullPath = path.resolve(process.cwd(), testStorageDir);
-    await fs.rm(fullPath, { recursive: true, force: true });
+    store = new InMemoryDecisionStore();
+    engine = new MirrorEngine(adapter, store, explainer, counterfactual, reputation, mockBlockchain, optimizer);
     await store.init();
   });
 

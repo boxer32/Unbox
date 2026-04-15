@@ -1,6 +1,6 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import React, { useState } from 'react';
-import { DashboardLayout } from '../components/DashboardLayout';
+import { DashboardLayout } from '../components/DashboardLayout.js';
 import { 
   Lock, Zap, ShieldCheck, AlertCircle, ArrowRight, 
   CreditCard, Loader2, Database, Clock, 
@@ -23,6 +23,7 @@ type FeedState = 'requested' | 'challenge' | 'paid' | 'verified' | 'delivered';
 
 function FeedPage() {
   const [step, setStep] = useState<FeedState>('challenge');
+  const [txHash, setTxHash] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [deliveredData, setDeliveredData] = useState<any>(null);
@@ -38,7 +39,7 @@ function FeedPage() {
       });
       if (!response.ok) {
         const err = await response.json();
-        throw new Error(err.error || 'Redeem failed');
+        throw new Error(err.error || 'Verification failed. Ensure the transaction is confirmed on X Layer Testnet.');
       }
       return response.json();
     },
@@ -53,21 +54,15 @@ function FeedPage() {
     }
   });
 
-  const startPayment = () => {
+  const handleRedeem = () => {
+    if (!txHash.startsWith('0x') || txHash.length !== 66) {
+      setErrorMessage('Please enter a valid Transaction Hash (0x...)');
+      return;
+    }
     setIsProcessing(true);
     setErrorMessage(null);
-    
-    // UI steps for feedback
-    setStep('requested');
-    
-    setTimeout(() => {
-      setStep('paid');
-      setTimeout(() => {
-        setStep('verified');
-        // Real backend call happens here
-        redeemMutation.mutate('mock-proof-' + Date.now());
-      }, 800);
-    }, 800);
+    setStep('verified');
+    redeemMutation.mutate(txHash);
   };
 
   return (
@@ -120,30 +115,39 @@ function FeedPage() {
                       </p>
                    </div>
                    
-                   <div className="max-w-sm mx-auto p-6 bg-black/40 rounded-2xl border border-white/5 space-y-6">
-                      <div className="grid grid-cols-2 gap-4 text-left">
-                         <SpecItem label="Asset" value="X-LAYER ETH" />
-                         <SpecItem label="Network" value="X Layer Testnet" />
-                         <SpecItem label="Expiry" value="5m 00s" />
-                         <SpecItem label="Amount" value="0.001 ETH" />
-                      </div>
+                   <div className="max-w-sm mx-auto p-6 bg-black/40 rounded-2xl border border-white/5 space-y-4">
+                       <div className="grid grid-cols-2 gap-4 text-left border-b border-white/5 pb-4 mb-4">
+                          <SpecItem label="Asset" value="X-LAYER ETH" />
+                          <SpecItem label="Network" value="X Layer Testnet" />
+                       </div>
 
-                      {errorMessage && (
-                        <div className="p-3 bg-unbox-red/10 border border-unbox-red/20 rounded-lg text-[10px] text-unbox-red flex items-center gap-2">
-                          <AlertCircle className="w-3 h-3" />
-                          {errorMessage}
-                        </div>
-                      )}
+                       <div className="space-y-2">
+                          <p className="text-[9px] uppercase tracking-widest text-unbox-amber font-bold text-left">Paste Transaction Hash (TxHash)</p>
+                          <input 
+                            type="text" 
+                            placeholder="0x..."
+                            value={txHash}
+                            onChange={(e) => setTxHash(e.target.value)}
+                            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-xs font-mono text-white focus:border-unbox-amber outline-none transition-colors"
+                          />
+                       </div>
 
-                      <button 
-                         onClick={startPayment}
-                         disabled={isProcessing}
-                         className="w-full py-4 bg-unbox-amber text-black font-black uppercase text-xs tracking-widest rounded-xl flex items-center justify-center gap-2 shadow-[0_0_30px_rgba(245,158,11,0.2)] disabled:opacity-50 transition-all hover:scale-[1.02]"
-                      >
-                         {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
-                         {isProcessing ? 'Verifying...' : 'Sign & Pay to Unbox'}
-                      </button>
-                   </div>
+                       {errorMessage && (
+                         <div className="p-3 bg-unbox-red/10 border border-unbox-red/20 rounded-lg text-[10px] text-unbox-red flex items-center gap-2">
+                           <AlertCircle className="w-3 h-3" />
+                           {errorMessage}
+                         </div>
+                       )}
+
+                       <button 
+                          onClick={handleRedeem}
+                          disabled={isProcessing || !txHash}
+                          className="w-full py-4 bg-unbox-amber text-black font-black uppercase text-xs tracking-widest rounded-xl flex items-center justify-center gap-2 shadow-[0_0_30px_rgba(245,158,11,0.2)] disabled:opacity-30 transition-all hover:scale-[1.02]"
+                       >
+                          {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
+                          {isProcessing ? 'Verifying on X Layer...' : 'Verify & Unbox Intelligence'}
+                       </button>
+                    </div>
                 </div>
               ) : (
                 /* UX-4.4.3: Delivery Result (Unlocked State) */

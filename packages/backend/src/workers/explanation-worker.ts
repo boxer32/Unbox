@@ -1,89 +1,169 @@
 import { DecisionPayload } from '@unbox/shared';
+import { OpenRouter } from '@openrouter/sdk';
 
 /**
  * REQ-MIRROR-004: Explanation Worker
  * Converts blocked decisions into plain-language explanations.
  */
 export class ExplanationWorker {
-  private readonly apiKey: string | undefined;
-  private readonly model: string;
+  private client: OpenRouter | null = null;
+  private modelName: string = 'google/gemini-2.0-flash-lite-preview-02-05:free';
+  private apiKey?: string;
 
-  constructor() {
-    this.apiKey = process.env.OPENROUTER_API_KEY;
-    this.model = process.env.OPENROUTER_MODEL ?? 'openai/gpt-4o-mini';
+  constructor(apiKey?: string, model?: string) {
+    console.log('[ExplanationWorker] Initializing AI Narrator...');
+    if (apiKey) {
+      console.log(`[ExplanationWorker] Success: OpenRouter Key detected (${apiKey.slice(0, 10)}...)`);
+      this.client = new OpenRouter({ apiKey });
+      this.modelName = model ?? 'google/gemini-2.0-flash-lite-preview-02-05:free';
+      this.apiKey = apiKey;
+    } else {
+      console.warn('[ExplanationWorker] Warning: OPENROUTER_API_KEY missing from environment.');
+    }
   }
 
   /**
-   * Generates a plain-language explanation for a blocked decision.
+   * Generates a structured explanation for a decision using OpenRouter JSON Schema.
    */
-  public async explainBlock(payload: DecisionPayload): Promise<string> {
-    if (payload.action !== 'block') {
-      return 'Decision was executed or deferred.';
-    }
-
-    // Try AI synthesis if API key is present
-    if (this.apiKey) {
+  public async explainDecision(payload: DecisionPayload): Promise<any> {
+    console.log(`[ExplanationWorker] explainDecision called for action: ${payload.action}`);
+    
+    if (this.client) {
+      console.log(`[ExplanationWorker] Requesting Structured JSON via OpenRouter (Model: ${this.modelName})...`);
       try {
-        return await this.generateAiExplanation(payload);
-      } catch (error) {
-        console.warn('[ExplanationWorker] AI Synthesis failed, falling back to templates.');
+        if (payload.action === 'block') {
+          return await this.generateStructuredBlockExplanation(this.client, payload);
+        } else {
+          return await this.generateStructuredSuccessExplanation(this.client, payload);
+        }
+      } catch (error: any) {
+        console.warn(`[ExplanationWorker] Structured AI Synthesis failed: ${error.message}. falling back to default.`);
       }
     }
 
-    // Fallback: Template-based explanation
-    return this.generateTemplateExplanation(payload);
+    return {
+      headline: payload.action === 'block' ? 'Trade Blocked' : 'Optimization Executed',
+      summary: 'Automated protocol safety verification.',
+      details: [{ title: 'Notice', content: 'AI synthesis was unavailable. Standard safety checks were applied.' }],
+      conclusion: 'Safety priority maintained.'
+    };
   }
 
-  /**
-   * Prompts OpenRouter for natural-language synthesis of risk factors.
-   */
-  private async generateAiExplanation(payload: DecisionPayload): Promise<string> {
-    if (!this.apiKey) {
-      throw new Error('OPENROUTER_API_KEY missing');
-    }
+  private async generateStructuredBlockExplanation(client: OpenRouter, payload: DecisionPayload): Promise<any> {
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${this.apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: this.modelName,
+        messages: [
+          {
+            role: 'user',
+            content: `Analyze this blocked trade on X Layer: 
+            Intent: ${payload.intentText}
+            Security Flags: ${payload.securityScan.flags.join(', ')}
+            Risk Score: ${payload.securityScan.score}/100
+            Market: $${payload.marketState.liquidity} liquidity
+            Oracle: ${payload.marketState.oracleRef}
+            Chain Context: Block #${payload.blockRef}`
+          }
+        ],
+        response_format: {
+          type: 'json_schema',
+          json_schema: {
+            name: 'forensic_report',
+            strict: true,
+            schema: {
+              type: 'object',
+              properties: {
+                headline: { type: 'string', description: 'Headline including the primary threat' },
+                summary: { type: 'string', description: 'Summary mentioning Chain/Block context if relevant' },
+                analysis: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      factor: { type: 'string' },
+                      description: { type: 'string' }
+                    },
+                    required: ['factor', 'description'],
+                    additionalProperties: false
+                  }
+                },
+                conclusion: { type: 'string', description: 'Danger avoided, referenced to Oracle/Market state' }
+              },
+              required: ['headline', 'summary', 'analysis', 'conclusion'],
+              additionalProperties: false
+            }
+          }
+        }
+      })
+    });
+
+    const data = await response.json() as any;
+    return JSON.parse(data.choices[0].message.content || '{}');
+  }
+
+  private async generateStructuredSuccessExplanation(client: OpenRouter, payload: DecisionPayload): Promise<any> {
+    const opt = (payload as any).optimization;
+    const replays = payload.replays || [];
+    const bestReplay = replays.reduce((prev, curr) => (curr.usdDelta > prev.usdDelta ? curr : prev), { usdDelta: -1 } as any);
 
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${this.apiKey}`,
-        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.apiKey}`,
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: this.model,
+        model: this.modelName,
         messages: [
           {
-            role: 'system',
-            content:
-              'You explain blocked on-chain trading decisions in one concise, objective sentence for operators.',
-          },
-          {
             role: 'user',
-            content: [
-              `Intent: ${payload.intentText}`,
-              `Security flags: ${payload.securityScan.flags.join(', ') || 'none'}`,
-              `Risk score: ${payload.securityScan.score}/100`,
-              `Market price: ${payload.marketState.price}`,
-              `Market liquidity: ${payload.marketState.liquidity}`,
-              'Output one sentence only. Mention the strongest risk signal first.',
-            ].join('\n'),
-          },
+            content: `Explain trade optimization on X Layer:
+            Strategy: ${opt?.executionStrategy}
+            Alpha: ${opt?.improvements?.slippageSaved}% slippage saved
+            Counterfactual: ${bestReplay.summary}
+            Oracle Verified: ${payload.marketState.oracleRef}
+            Reference Block: #${payload.blockRef}`
+          }
         ],
-        temperature: 0.2,
-      }),
+        response_format: {
+          type: 'json_schema',
+          json_schema: {
+            name: 'efficiency_report',
+            strict: true,
+            schema: {
+              type: 'object',
+              properties: {
+                headline: { type: 'string', description: 'Economic alpha summary' },
+                coreBenefit: { type: 'string', description: 'Detailed reason for path choice with Oracle/Network context' },
+                comparisons: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      scenario: { type: 'string' },
+                      result: { type: 'string' }
+                    },
+                    required: ['scenario', 'result'],
+                    additionalProperties: false
+                  }
+                },
+                longTermValue: { type: 'string', description: 'Reputation/Wealth impact based on current chain state' }
+              },
+              required: ['headline', 'coreBenefit', 'comparisons', 'longTermValue'],
+              additionalProperties: false
+            }
+          }
+        }
+      })
     });
 
-    if (!response.ok) {
-      throw new Error(`OpenRouter request failed with status ${response.status}`);
-    }
-
-    const json = (await response.json()) as {
-      choices?: Array<{ message?: { content?: string } }>;
-    };
-    const content = json.choices?.[0]?.message?.content?.trim();
-    if (!content) {
-      throw new Error('OpenRouter returned empty explanation');
-    }
-    return content;
+    const data = await response.json() as any;
+    return JSON.parse(data.choices[0].message.content || '{}');
   }
 
   /**

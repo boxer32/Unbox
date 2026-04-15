@@ -1,5 +1,5 @@
 import { DecisionPayload } from '@unbox/shared';
-import { BlockchainService } from './blockchain-service';
+import { BlockchainService } from './blockchain-service.js';
 
 /**
  * REQ-REP-003: Reputation Service

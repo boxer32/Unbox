@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { AgentAdapter, IntentContext } from '../agent-adapter';
+import { AgentAdapter, IntentContext } from '../agent-adapter.js';
 
 describe('AgentAdapter', () => {
   const adapter = new AgentAdapter();

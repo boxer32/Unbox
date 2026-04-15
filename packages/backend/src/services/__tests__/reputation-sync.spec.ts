@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { ReputationService } from '../reputation-service';
+import { ReputationService } from '../reputation-service.js';
 import { ethers } from 'ethers';
 import { agentReputationAbi, resolveRuntimeConfig } from '@unbox/shared';
-import { BlockchainService } from '../blockchain-service';
+import { BlockchainService } from '../blockchain-service.js';
 
 describe('Reputation Synchronization Integration (TC-REP-003)', () => {
   const runtimeConfig = resolveRuntimeConfig(process.env as Record<string, string | undefined>);

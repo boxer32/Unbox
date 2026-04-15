@@ -131,6 +131,17 @@ Mapped IDs: `REQ-FEED-002`, `REQ-FEED-003`.
 6. Dashboard consumes events and APIs for live visualization.
 7. External buyers access data via x402 challenge and paid delivery.
 
+## 5.1 Mirror API endpoints
+
+| Endpoint | Method | Responsibility |
+| :--- | :--- | :--- |
+| `/api/mirror` | `POST` | Entry point for agents to submit decisions via `MirrorEngine`. |
+| `/api/decisions` | `GET` | Retrieve list of recent mirror records. |
+| `/api/decisions/:id` | `GET` | Retrieve full detail for a specific decision. |
+| `/api/stats` | `GET` | Retrieve aggregate system health and decision stats. |
+
+Mapped IDs: `REQ-MIRROR-001`, `REQ-MIRROR-002`, `REQ-MIRROR-005`.
+
 Mapped IDs:
 - `REQ-MIRROR-001..005`
 - `REQ-CF-001..005`

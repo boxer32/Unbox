@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import { decisionLogAbi, agentReputationAbi, resolveRuntimeConfig } from '@unbox/shared';
+import { decisionLogAbi, agentReputationAbi, unboxGuardrailAbi, resolveRuntimeConfig } from '@unbox/shared';
 
 /**
  * REQ-MIRROR-002, REQ-REP-003, NFR-004
@@ -7,7 +7,7 @@ import { decisionLogAbi, agentReputationAbi, resolveRuntimeConfig } from '@unbox
  * Handles transaction submission with automated queueing, nonce management, and retries.
  */
 
-export type BlockchainJobType = 'ANCHOR_DECISION' | 'UPDATE_SCORE';
+export type BlockchainJobType = 'ANCHOR_DECISION' | 'UPDATE_SCORE' | 'HANDSHAKE_GUARDRAIL';
 
 export interface BlockchainJob {
   id: string;
@@ -24,25 +24,28 @@ export class BlockchainService {
   private wallet: ethers.Wallet;
   private decisionLog: ethers.Contract;
   private agentReputation: ethers.Contract;
+  private unboxGuardrail: ethers.Contract;
   
   private queue: BlockchainJob[] = [];
   private isProcessing = false;
   private currentNonce: number | null = null;
 
-  constructor() {
-    const config = resolveRuntimeConfig(process.env as Record<string, string | undefined>);
+  constructor(env: Record<string, string | undefined> = {}) {
+    const config = resolveRuntimeConfig(env);
     const rpcUrl = config.rpcUrl;
-    const privateKey = process.env.PRIVATE_KEY;
+    const privateKey = env.PRIVATE_KEY;
     if (!privateKey) {
       throw new Error('PRIVATE_KEY is required to initialize BlockchainService.');
     }
     const logAddr = config.decisionLogAddress;
     const repAddr = config.agentReputationAddress;
+    const guardAddr = config.unboxGuardrailAddress;
 
     this.provider = new ethers.JsonRpcProvider(rpcUrl);
     this.wallet = new ethers.Wallet(privateKey, this.provider);
     this.decisionLog = new ethers.Contract(logAddr, decisionLogAbi, this.wallet);
     this.agentReputation = new ethers.Contract(repAddr, agentReputationAbi, this.wallet);
+    this.unboxGuardrail = new ethers.Contract(guardAddr, unboxGuardrailAbi, this.wallet);
   }
 
   /**
@@ -86,8 +89,10 @@ export class BlockchainService {
 
           if (job.type === 'ANCHOR_DECISION') {
             tx = await this.decisionLog.logDecision(...job.params, { nonce: this.currentNonce });
-          } else {
+          } else if (job.type === 'UPDATE_SCORE') {
             tx = await this.agentReputation.updateScore(...job.params, { nonce: this.currentNonce });
+          } else {
+            tx = await this.unboxGuardrail.requestExecution(...job.params, { nonce: this.currentNonce });
           }
 
           job.txHash = tx.hash;
@@ -149,6 +154,69 @@ export class BlockchainService {
     return this.queue.find(j => j.id === jobId);
   }
 
+  /**
+   * Performs an on-chain handshake with the Guardrail contract.
+   * This is a blocking verification step before execution.
+   */
+  public async requestHandshake(
+    agentTokenId: number, 
+    payloadHash: string, 
+    riskFlagCount: number
+  ): Promise<string> {
+    // CR Comment 1: Added timeout check for RPC stability
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('RPC_TIMEOUT_DURING_HANDSHAKE')), 10000)
+    );
+
+    try {
+      return await Promise.race([
+        this.enqueue('HANDSHAKE_GUARDRAIL', [agentTokenId, payloadHash, riskFlagCount]),
+        timeoutPromise as Promise<string>
+      ]);
+    } catch (error: any) {
+      console.error(`[BlockchainService] Handshake Enqueue Failed:`, error.message);
+      // Fallback Policy: Reject Safely if network is unstable
+      throw new Error(`GUARDRAIL_NETWORK_ERROR: ${error.message}`);
+    }
+  }
+
+  /**
+   * Performs a synchronous dry-run of the handshake.
+   * Throws an error if the contract rules (Reputation vs Risk) would cause a revert or return false.
+   */
+  public async verifyHandshake(
+    agentTokenId: number,
+    payloadHash: string,
+    riskFlagCount: number
+  ): Promise<void> {
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('RPC_TIMEOUT_DURING_VERIFICATION')), 5000)
+    );
+
+    try {
+      // Use staticCall to dry-run the transaction
+      // CR Comment 1: Added timeout to prevent hanging on RPC delay
+      const success = await Promise.race([
+        this.unboxGuardrail.requestExecution.staticCall(agentTokenId, payloadHash, riskFlagCount),
+        timeoutPromise as Promise<boolean>
+      ]);
+
+      // CR Comment 2 (Epic 1): Now checking for return false instead of just revert
+      if (!success) {
+        throw new Error('GUARDRAIL_REJECTED_BY_CONTRACT');
+      }
+      
+      console.log(`[BlockchainService] Handshake Verification SUCCESS for Token ${agentTokenId}`);
+    } catch (err: any) {
+      console.warn(`[BlockchainService] Handshake Verification FAILED:`, err.message);
+      // Fallback Policy: Reject Safely on verification failure
+      if (err.message.includes('TIMEOUT')) {
+        throw new Error('GUARDRAIL_TIMEOUT_FAILSAFE_BLOCK');
+      }
+      throw err;
+    }
+  }
+
   public async getAgentScore(tokenId: number): Promise<{
     q: number, s: number, e: number, t: number
   }> {
@@ -163,6 +231,37 @@ export class BlockchainService {
     } catch (error) {
       console.error(`[BlockchainService] Failed to fetch score for token ${tokenId}, returning defaults`, error);
       return { q: 90, s: 90, e: 90, t: 95 };
+    }
+  }
+
+  /**
+   * REQ-FEED-002: Verifies a payment transaction on-chain.
+   * Checks for existence, success, recipient, and minimum value.
+   */
+  public async verifyTransaction(txHash: string, expectedRecipient: string, minAmountEth: string): Promise<boolean> {
+    try {
+      const tx = await this.provider.getTransaction(txHash);
+      if (!tx) return false;
+
+      // Verify recipient matches (case-insensitive)
+      if (tx.to?.toLowerCase() !== expectedRecipient.toLowerCase()) {
+        console.warn(`[BlockchainService] Recipient mismatch: expected ${expectedRecipient}, got ${tx.to}`);
+        return false;
+      }
+
+      // Verify value
+      const valWei = tx.value;
+      const minWei = ethers.parseEther(minAmountEth);
+      if (valWei < minWei) {
+        console.warn(`[BlockchainService] Insufficient value: expected ${minAmountEth}, got ${ethers.formatEther(valWei)}`);
+        return false;
+      }
+
+      const receipt = await tx.wait(1);
+      return receipt?.status === 1;
+    } catch (error) {
+      console.error(`[BlockchainService] Payment verification failed for ${txHash}:`, error);
+      return false;
     }
   }
 }

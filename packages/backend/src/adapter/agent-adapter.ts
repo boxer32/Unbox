@@ -3,8 +3,9 @@ import {
   DecisionPayloadSchema, 
   DecisionAction 
 } from '@unbox/shared';
-import { v4 as uuidv4 } from 'uuid';
+
 import { ethers } from 'ethers';
+import { ThirdwebIntent } from '../skills/types.js';
 
 /**
  * REQ-MIRROR-001: Agent Adapter
@@ -25,6 +26,7 @@ export interface IntentContext {
     flags: string[];
   };
   blockRef: number;
+  structuredIntent?: ThirdwebIntent;
 }
 
 export class AgentAdapter {
@@ -37,7 +39,14 @@ export class AgentAdapter {
     action: DecisionAction
   ): Promise<DecisionPayload> {
     const timestampMs = Date.now();
-    const decisionId = uuidv4();
+    const decisionId = crypto.randomUUID();
+
+    // Extract target address for Global Risk State (V1.5)
+    let targetAddress = context.structuredIntent?.tokenOut;
+    if (!targetAddress) {
+      const addrMatch = context.intentText.match(/0x[a-fA-F0-9]{40}/);
+      targetAddress = addrMatch ? addrMatch[0] : undefined;
+    }
 
     const payload: Partial<DecisionPayload> = {
       decisionId,
@@ -48,6 +57,7 @@ export class AgentAdapter {
       securityScan: context.securityScan,
       blockRef: context.blockRef,
       timestampMs,
+      targetAddress
     };
 
     // REQ-MIRROR-002: Generate deterministic hash for on-chain anchoring
@@ -87,5 +97,12 @@ export class AgentAdapter {
       result[key] = this.deepSort(obj[key]);
     }
     return result;
+  }
+
+  /**
+   * Helper to determine risk flag count for on-chain guardrail.
+   */
+  public computeRiskCount(payload: DecisionPayload): number {
+    return payload.securityScan.flags.length;
   }
 }

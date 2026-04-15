@@ -29,11 +29,52 @@ export const DecisionPayloadSchema = z.object({
   blockRef: z.number().int().positive().describe('X Layer block number reference'),
   timestampMs: z.number().int().describe('Unix timestamp in milliseconds'),
   payloadHash: z.string().describe('Deterministic hash of the payload for on-chain anchoring'),
-  explanation: z.string().optional().describe('Plain-language block explanation'),
+  explanation: z.any().optional().describe('Plain-language block explanation or structural JSON'),
+  targetAddress: z.string().optional().describe('Target contract or wallet address involved in the decision'),
   replays: z.array(z.any()).optional().describe('Counterfactual replay results'),
+  optimization: z.any().optional().describe('Optimization outcome'),
+  latencyMs: z.number().optional().describe('Decision latency'),
 });
 
 export type MarketState = z.infer<typeof MarketStateSchema>;
 export type SecurityScan = z.infer<typeof SecurityScanSchema>;
 export type DecisionAction = z.infer<typeof DecisionAction>;
 export type DecisionPayload = z.infer<typeof DecisionPayloadSchema>;
+
+export interface CounterfactualResult {
+  scenario: string;
+  usdDelta: number;
+  summary: string;
+  slippageDeltaPct: number;
+  gasDelta: number;
+}
+
+export interface RiskState {
+  score: number;
+  flags: Array<{ flag: string; count: number }>;
+  targets: Array<{ address: string; count: number }>;
+}
+
+export interface ThirdwebIntent {
+  agentTokenId: number;
+  action: 'SWAP' | 'TRANSFER';
+  tokenIn: string;
+  tokenOut: string;
+  amount: string;
+}
+
+export interface OptimizedPlan {
+  originalPayload: any;
+  optimizedPayload: any;
+  improvements: { 
+    slippageSaved: number; 
+    gasSaved: number; 
+  };
+  riskFlags: number;
+  payloadHash: string;
+}
+
+export interface OptimizerSkill {
+  skillName: string;
+  optimize(intent: ThirdwebIntent): Promise<OptimizedPlan>;
+}

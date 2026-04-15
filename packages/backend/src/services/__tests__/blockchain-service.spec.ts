@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { BlockchainService } from '../blockchain-service';
+import { BlockchainService } from '../blockchain-service.js';
 import { ethers } from 'ethers';
 
 // Mock ethers
@@ -38,8 +38,13 @@ describe('BlockchainService Congestion Queueing (S5-T04)', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    process.env.PRIVATE_KEY = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
-    service = new BlockchainService();
+    service = new BlockchainService({ 
+      PRIVATE_KEY: '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+      RPC_URL: 'https://testrpc.xlayer.tech/terigon',
+      DECISION_LOG_ADDRESS: '0x3aAde2dCD2Df6a8cAc689EE797591b2913658659',
+      REPUTATION_CONTRACT_ADDRESS: '0xffa7CA1AEEEbBc30C874d32C7e22F052BbEa0429',
+      UNBOX_GUARDRAIL_ADDRESS: '0xab16A69A5a8c12C732e0DEFF4BE56A70bb64c926'
+    });
   });
 
   it('should enqueue jobs and process them sequentially', async () => {

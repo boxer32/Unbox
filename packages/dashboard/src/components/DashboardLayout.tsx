@@ -1,15 +1,9 @@
-import React, { useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import { Activity, Shield, LayoutDashboard, Database, Wallet, CheckCircle, Info, HelpCircle } from 'lucide-react';
-import { WalletConnect } from './WalletConnect';
+import { Show, SignInButton, UserButton } from '@clerk/react';
+import { WalletConnect } from './WalletConnect.js';
 
 export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [address, setAddress] = useState<string | null>(null);
-
-  const connectWallet = () => {
-    setAddress('0x71C...492d');
-  };
-
   return (
     <div className="min-h-screen bg-[#030303] text-white font-sans selection:bg-unbox-green selection:text-black">
       {/* Tool Header */}
@@ -23,8 +17,9 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ child
             </div>
           </Link>
           <nav className="hidden lg:flex items-center gap-2 p-1 bg-white/[0.03] rounded-xl border border-white/5">
-            <NavItem to="/mirror" icon={LayoutDashboard} label="Decision Mirror" />
-            <NavItem to="/feed" icon={Activity} label="Intelligence Feed" />
+            <NavItem to="/mirror" icon={LayoutDashboard} label="Mirror" />
+            <NavItem to="/" icon={Shield} label="Score" />
+            <NavItem to="/feed" icon={Activity} label="Feed" />
           </nav>
         </div>
         
@@ -36,22 +31,28 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ child
 
           <div className="w-px h-6 bg-white/10" />
 
-          <button 
-            onClick={connectWallet}
-            className="px-5 py-2 bg-white text-black hover:bg-unbox-green border border-transparent rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all active:scale-95"
-          >
-            {address ? (
-              <>
-                <CheckCircle className="w-3.5 h-3.5" />
-                {address}
-              </>
-            ) : (
-              <>
-                <Wallet className="w-3.5 h-3.5" />
-                Connect Wallet
-              </>
-            )}
-          </button>
+          <Show when="signed-out">
+            <SignInButton mode="modal">
+              <button className="flex items-center gap-2 px-6 py-2 bg-unbox-green text-black font-black text-[10px] uppercase tracking-widest rounded-lg hover:scale-105 transition-transform shadow-[0_0_20px_rgba(16,185,129,0.2)]">
+                Sign In to Unbox
+              </button>
+            </SignInButton>
+          </Show>
+
+          <Show when="signed-in">
+            <div className="flex items-center gap-6">
+              <WalletConnect />
+              <div className="w-px h-6 bg-white/5" />
+              <UserButton 
+                appearance={{
+                  elements: {
+                    userButtonAvatarBox: "w-8 h-8 rounded-lg border border-unbox-green/30",
+                    userButtonTrigger: "focus:shadow-none hover:scale-105 transition-transform"
+                  }
+                }}
+              />
+            </div>
+          </Show>
 
           <button className="p-2 text-white/20 hover:text-unbox-green transition-colors">
             <HelpCircle className="w-5 h-5" />

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { X402Gateway } from '../x402-gateway';
-import { SettlementService } from '../../services/settlement-service';
+import { X402Gateway } from '../x402-gateway.js';
+import { SettlementService } from '../../services/settlement-service.js';
 
 /**
  * TC-FEED-001, TC-FEED-002, TC-FEED-003

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CounterfactualEngine } from '../counterfactual-engine';
+import { CounterfactualEngine } from '../counterfactual-engine.js';
 import { DecisionPayload } from '@unbox/shared';
 
 describe('CounterfactualEngine', () => {

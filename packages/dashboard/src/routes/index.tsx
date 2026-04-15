@@ -78,7 +78,7 @@ function LandingPage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-48 pb-32 px-8">
+      <section className="relative pt-48 pb-16 px-8">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
           <div className="space-y-10 relative z-10">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-unbox-green/5 border border-unbox-green/20 text-[10px] font-bold uppercase tracking-[0.2em] text-unbox-green">
@@ -110,49 +110,47 @@ function LandingPage() {
           </div>
 
           <div className="relative group">
-            {/* Ambient Glow */}
             <div className="absolute -inset-20 bg-unbox-green/10 blur-[100px] rounded-full animate-breathe" />
-            
             <div className="relative flex items-center justify-center animate-float">
-               {/* Reflection Floor */}
                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-3/4 h-32 bg-unbox-green/5 blur-3xl -z-10 rounded-[100%]" />
-               
                <div className="relative glass-card aspect-square max-w-[500px] w-full mx-auto overflow-hidden group">
-                  <img 
-                    src="/assets/hero_3d.png" 
-                    alt="Unbox Core 3D" 
-                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" 
-                  />
-                  
-                  {/* Internal Scanning HUD Overlay */}
+                  <img src="/assets/hero_3d.png" alt="Unbox" className="w-full h-full object-cover grayscale opacity-40 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-1000" />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#030303] via-transparent to-transparent opacity-40" />
-                  
                   <div className="absolute inset-0 flex flex-col justify-between p-8 pointer-events-none">
                     <div className="flex justify-between items-start">
                       <div className="p-3 glass-card border-white/5 bg-white/5 backdrop-blur-xl">
                         <Cpu className="w-5 h-5 text-unbox-green" />
                       </div>
-                      <div className="text-right space-y-1">
-                        <p className="text-[8px] font-black uppercase tracking-[0.3em] text-white/30">System Integrity</p>
-                        <p className="text-[10px] font-mono text-unbox-green">99.98% SAFE</p>
+                      <div className="text-right">
+                        <p className="text-[8px] font-black uppercase tracking-[0.3em] text-white/30">Registry Status</p>
+                        <p className="text-[10px] font-mono text-unbox-green">ACTIVE_SYNC</p>
                       </div>
-                    </div>
-                    
-                    <div className="space-y-4 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-700 delay-100">
-                       <div className="flex items-center justify-between text-[8px] font-black tracking-[0.4em] text-unbox-green uppercase">
-                        <span>Forensic Scan Active</span>
-                        <div className="flex gap-1">
-                          <span className="w-1 h-3 bg-unbox-green animate-[pulse_1s_infinite]" />
-                          <span className="w-1 h-3 bg-unbox-green animate-[pulse_1.2s_infinite]" />
-                          <span className="w-1 h-3 bg-unbox-green animate-[pulse_0.8s_infinite]" />
-                        </div>
-                       </div>
-                       <div className="h-[2px] bg-white/5 rounded-full overflow-hidden">
-                         <div className="h-full bg-unbox-green w-full origin-left animate-in slide-in-from-left duration-[2000ms] transition-all" />
-                       </div>
                     </div>
                   </div>
                </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Live Reputation HUD integration */}
+      <section className="px-8 max-w-7xl mx-auto mb-24 anim-fade-in-up">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+          <div className="lg:col-span-4 space-y-6">
+            <div className="space-y-4">
+              <h3 className="text-xs font-black uppercase tracking-[0.4em] text-unbox-green">Protocol Reputation</h3>
+              <p className="text-3xl font-bold tracking-tight">The weighted soul of Unbox Agents.</p>
+              <p className="text-sm text-white/40 leading-relaxed font-medium">
+                Our reputation engine aggregates on-chain decision traits to assign trust. These scores determine liquidity limits and gatekeeper privileges.
+              </p>
+            </div>
+          </div>
+          <div className="lg:col-span-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+               <ReputationGauge label="Quality" value="98" color="emerald" />
+               <ReputationGauge label="Security" value="100" color="unbox-green" />
+               <ReputationGauge label="Efficiency" value="94" color="amber" />
+               <ReputationGauge label="Trust" value="99" color="emerald" />
             </div>
           </div>
         </div>
@@ -290,6 +288,37 @@ function FeatureCard({ icon: Icon, title, desc, label, id }: { icon: any, title:
             Explore Documentation <ArrowRight className="w-3 h-3" />
           </div>
         </div>
+      </div>
+    </div>
+  )
+}
+
+function ReputationGauge({ label, value, color }: { label: string, value: string, color: string }) {
+  return (
+    <div className="glass-card p-6 border-white/5 bg-white/[0.02] flex flex-col gap-4 group hover:border-unbox-green/30 transition-all hover:bg-white/[0.04]">
+      <div className="flex justify-between items-start">
+        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 group-hover:text-unbox-green transition-colors">{label}</span>
+        <div className={cn(
+          "w-1.5 h-1.5 rounded-full",
+          color === 'unbox-green' ? "bg-unbox-green shadow-[0_0_8px_theme(colors.unbox-green)]" : 
+          color === 'amber' ? "bg-amber-500 shadow-[0_0_8px_theme(colors.amber.500)]" : 
+          "bg-emerald-500 shadow-[0_0_8px_theme(colors.emerald.500)]"
+        )} />
+      </div>
+      <div className="flex items-baseline gap-1">
+        <span className="text-4xl font-black text-white">{value}</span>
+        <span className="text-[10px] font-bold text-white/20 uppercase">Units</span>
+      </div>
+      <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+        <div 
+          className={cn(
+            "h-full rounded-full transition-all duration-[1500ms] shadow-[0_0_10px_currentcolor]",
+            color === 'unbox-green' ? "bg-unbox-green" : 
+            color === 'amber' ? "bg-amber-500" : 
+            "bg-emerald-500"
+          )}
+          style={{ width: `${value}%` }} 
+        />
       </div>
     </div>
   )
