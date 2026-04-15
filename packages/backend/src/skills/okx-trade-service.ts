@@ -49,4 +49,30 @@ export class OKXTradeService {
       return null;
     }
   }
+
+  /**
+   * Fetches the list of chains supported by OKX DEX infrastructure.
+   */
+  public async getSupportedChains(): Promise<any> {
+    if (!this.apiKey) return null;
+
+    const timestamp = new Date().toISOString().slice(0, -5) + 'Z';
+    const path = '/api/v6/dex/balance/supported/chain';
+    const signature = this.createSignature(timestamp, 'GET', path);
+
+    try {
+      const response = await fetch(this.baseUrl + path, {
+        headers: {
+          'OK-ACCESS-KEY': this.apiKey,
+          'OK-ACCESS-SIGN': signature,
+          'OK-ACCESS-TIMESTAMP': timestamp,
+          'OK-ACCESS-PASSPHRASE': this.passphrase,
+        }
+      });
+      return await response.json();
+    } catch (error) {
+      console.error('[OKXTradeService] Supported Chains API Error:', error);
+      return null;
+    }
+  }
 }
